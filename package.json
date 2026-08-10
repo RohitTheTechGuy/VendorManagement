@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "workspaces": ["apps/web", "apps/api", "packages/shared", "packages/db"],
   "scripts": {
-    "dev": "npm run db:generate && concurrently \"npm run dev --workspace apps/api\" \"npm run dev --workspace apps/web\"",
+    "dev": "npm run build --workspace packages/shared && npm run db:generate --workspace packages/db && npm run build --workspace packages/db && concurrently \"npm run dev --workspace apps/api\" \"npm run dev --workspace apps/web\"",
     "build": "npm run build --workspace packages/shared && npm run db:generate --workspace packages/db && npm run build --workspace packages/db && npm run build --workspace apps/api && npm run build --workspace apps/web",
     "typecheck": "npm run build --workspace packages/shared && npm run db:generate --workspace packages/db && npm run build --workspace packages/db && npm run typecheck --workspace apps/api && npm run typecheck --workspace apps/web",
     "test": "npm run build --workspace packages/shared && npm run db:generate --workspace packages/db && npm run build --workspace packages/db && npm run test --workspace apps/api && npm run test --workspace apps/web && npm run test --workspace packages/shared",

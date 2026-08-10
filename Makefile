@@ -6,7 +6,7 @@ IMAGE_NAME := vendor-management
 
 .PHONY: help dev dev-frontend dev-backend install install-frontend install-backend \
 	build build-frontend build-backend \
-	db-generate db-migrate db-migrate-create db-migrate-status db-push db-studio \
+	db-generate db-migrate db-migrate-create db-migrate-status db-migrate-deploy db-push db-studio \
 	docker-build docker-run stop kill-port lint lint-frontend lint-backend \
 	typecheck typecheck-frontend typecheck-backend \
 	deploy deploy-ensure deploy-vars deploy-up
@@ -62,6 +62,9 @@ db-migrate-create: ## Create a migration without applying it; use NAME=add-vendo
 
 db-migrate-status: ## Show Prisma migration status
 	cd $(ROOT_DIR) && npx prisma migrate status --schema=$(DB_SCHEMA)
+
+db-migrate-deploy: ## Apply existing migration files to the database; does not create new ones
+	cd $(ROOT_DIR) && npx prisma migrate deploy --schema=$(DB_SCHEMA)
 
 db-push: ## Block direct schema pushes; use db-migrate instead
 	@echo "Blocked: db push bypasses reviewed migration files. Use make db-migrate NAME=your-change."
@@ -130,7 +133,15 @@ deploy-ensure: ## Create or link a Railway project and service
 
 deploy-vars: ## Upload root .env values to the linked Railway service
 	@echo "Uploading local environment values to Railway..."
-	cd $(ROOT_DIR) && railway variables set $$(grep -v '^#' .env | grep -v '^$$' | tr '\n' ' ')
+	@cd $(ROOT_DIR) && grep -v '^#' .env | grep -v '^$$' | awk -F= '{ \
+		key=$$1; \
+		val=substr($$0, index($$0, "=") + 1); \
+		gsub(/^"|"$$/, "", val); \
+		gsub(/^'"'"'|'"'"'$$/, "", val); \
+		print key "=" val \
+	}' > /tmp/vendor-management-railway-vars.env
+	cd $(ROOT_DIR) && railway variables set $$(tr '\n' ' ' < /tmp/vendor-management-railway-vars.env)
+	@rm -f /tmp/vendor-management-railway-vars.env
 	cd $(ROOT_DIR) && railway variables set NODE_ENV=production
 
 deploy-up: ## Deploy the current branch to Railway

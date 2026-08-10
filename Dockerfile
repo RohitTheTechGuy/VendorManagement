@@ -50,6 +50,8 @@ RUN npm ci --omit=dev
 COPY packages/db/ packages/db/
 RUN npx prisma generate --schema=packages/db/prisma/schema.prisma
 
+COPY --from=backend-build /app/packages/shared/dist/ packages/shared/dist/
+COPY --from=backend-build /app/packages/db/dist/ packages/db/dist/
 COPY --from=backend-build /app/apps/api/dist/ apps/api/dist/
 COPY --from=frontend-build /app/apps/web/dist/ apps/api/frontend/
 
