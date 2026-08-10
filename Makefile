@@ -120,6 +120,13 @@ deploy-ensure: ## Create or link a Railway project and service
 		echo "No Railway project is linked. Starting Railway setup..."; \
 		railway init; \
 	fi
+	@if railway service list 2>&1 | grep -q "No services"; then \
+		echo "No service found. Creating one..."; \
+		railway add --service VendorManagement --variables "NODE_ENV=production" --json; \
+		railway service link VendorManagement; \
+	else \
+		echo "Railway service already exists."; \
+	fi
 
 deploy-vars: ## Upload root .env values to the linked Railway service
 	@echo "Uploading local environment values to Railway..."

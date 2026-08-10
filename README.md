@@ -77,6 +77,16 @@ Never commit `.env` files, database URLs, authentication secrets, private keys, 
 
 The repository ignores local environment files. Use `.env.example` only for empty variable names and safe example values.
 
+## Design mocks
+
+The `mocks/` folder contains wireframe prototypes that define the target user flows:
+
+- `mocks/vendor-onboarding-prototype.html` — 15-screen onboarding journey with buyer, platform, and vendor lanes.
+- `mocks/index.html` — GitHub Pages redirect.
+- `mocks/README.md` — Details from the upstream mock repository.
+
+Open `mocks/vendor-onboarding-prototype.html` in a browser to view the wireframes. All feature implementation follows these mocks.
+
 ## Project status
 
 Early development — the repository is being scaffolded. Features listed above

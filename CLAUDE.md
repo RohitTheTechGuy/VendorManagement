@@ -71,6 +71,10 @@
 
 
 
+## Goal
+
+Build a vendor management application based on the wireframe mocks in `mocks/`. The onboarding prototype in `mocks/vendor-onboarding-prototype.html` defines the target user flows for buyer, platform, and vendor lanes across 15 screens. All feature implementation should follow these mocks as the source of truth for layout, flow, and screen structure.
+
 ## Architectural decisions finalized
 
 - Use TypeScript for all application and package source code. Do not use JavaScript.

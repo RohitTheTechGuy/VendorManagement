@@ -3,7 +3,7 @@ FROM node:22-alpine AS frontend-build
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+COPY package.json package-lock.json tsconfig.base.json ./
 COPY apps/web/package.json apps/web/package.json
 COPY apps/api/package.json apps/api/package.json
 COPY packages/shared/package.json packages/shared/package.json
@@ -12,6 +12,7 @@ RUN npm ci
 
 COPY apps/web/ apps/web/
 COPY packages/shared/ packages/shared/
+RUN npm run build --workspace packages/shared
 RUN npm run build --workspace apps/web
 
 # Stage 2: Build the Express backend
@@ -19,7 +20,7 @@ FROM node:22-alpine AS backend-build
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+COPY package.json package-lock.json tsconfig.base.json ./
 COPY apps/web/package.json apps/web/package.json
 COPY apps/api/package.json apps/api/package.json
 COPY packages/shared/package.json packages/shared/package.json
@@ -29,6 +30,7 @@ RUN npm ci
 COPY apps/api/ apps/api/
 COPY packages/shared/ packages/shared/
 COPY packages/db/ packages/db/
+RUN npm run build --workspace packages/shared
 RUN npx prisma generate --schema=packages/db/prisma/schema.prisma
 RUN npm run build --workspace apps/api
 
