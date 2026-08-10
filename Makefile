@@ -6,7 +6,7 @@ IMAGE_NAME := vendor-management
 
 .PHONY: help dev dev-frontend dev-backend install install-frontend install-backend \
 	build build-frontend build-backend \
-	db-generate db-migrate db-migrate-create db-migrate-status db-migrate-deploy db-push db-studio \
+	db-generate db-migrate db-migrate-create db-migrate-status db-migrate-deploy db-push db-studio db-seed \
 	docker-build docker-run stop kill-port lint lint-frontend lint-backend \
 	typecheck typecheck-frontend typecheck-backend \
 	deploy deploy-ensure deploy-vars deploy-up
@@ -55,6 +55,9 @@ db-generate: ## Generate the Prisma client
 db-migrate: ## Create and apply a migration; use NAME=add-vendors
 	@test -n "$(NAME)" || (echo "Set NAME, for example: make db-migrate NAME=add-vendors"; exit 1)
 	cd $(ROOT_DIR) && npx prisma migrate dev --schema=$(DB_SCHEMA) --name $(NAME)
+
+db-seed: ## Seed dev data (org, login user, directory, requirements); RESET=1 truncates first
+	cd $(ROOT_DIR) && npx tsx packages/db/prisma/seed.ts $(if $(RESET),--reset,)
 
 db-migrate-create: ## Create a migration without applying it; use NAME=add-vendors
 	@test -n "$(NAME)" || (echo "Set NAME, for example: make db-migrate-create NAME=add-vendors"; exit 1)

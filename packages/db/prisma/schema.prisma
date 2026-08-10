@@ -7,58 +7,158 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id            String    @id
-  name          String
-  email         String    @unique
-  emailVerified Boolean   @default(false)
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  sessions      Session[]
-  accounts      Account[]
+// ---------------------------------------------------------------------------
+// Enums (translate the spec's `text + CHECK` constraints to Postgres enums).
+// ---------------------------------------------------------------------------
+
+enum RequirementStage {
+  DRAFT
+  CANDIDATES_SELECTED
+  INVITES_SENT
+  IN_PROGRESS
+  CLOSED
 }
 
-model Session {
-  id        String   @id
-  expiresAt DateTime
-  token     String   @unique
+enum CandidateSource {
+  MANUAL
+  DIRECTORY
+}
+
+// Per-candidate invite state on a requirement.
+enum InviteStatus {
+  NOT_INVITED
+  INVITED
+  OPENED
+  EXPIRED
+}
+
+// Lifecycle of a single invitation record.
+enum InvitationStatus {
+  SENT
+  OPENED
+  EXPIRED
+}
+
+enum BadgeState {
+  VERIFIED
+  LISTED
+  STALE
+}
+
+// ---------------------------------------------------------------------------
+// Buyer tenant
+// ---------------------------------------------------------------------------
+
+model BuyerOrg {
+  id        String   @id @default(uuid())
+  legalName String
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  ipAddress String?
-  userAgent String?
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId])
+  users        BuyerUser[]
+  requirements Requirement[]
+  candidates   Candidate[]
+  invitations  Invitation[]
 }
 
-model Account {
-  id                    String    @id
-  accountId             String
-  providerId            String
-  userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  accessToken           String?
-  refreshToken          String?
-  idToken               String?
-  accessTokenExpiresAt  DateTime?
-  refreshTokenExpiresAt DateTime?
-  scope                 String?
-  password              String?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+model BuyerUser {
+  id           String   @id @default(uuid())
+  orgId        String
+  email        String   @unique
+  passwordHash String
+  fullName     String?
+  role         String   @default("buyer")
+  createdAt    DateTime @default(now())
 
-  @@index([userId])
+  org               BuyerOrg      @relation(fields: [orgId], references: [id])
+  ownedRequirements Requirement[] @relation("RequirementOwner")
+
+  @@index([orgId])
 }
 
-model Verification {
-  id         String   @id
-  identifier String
-  value      String
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+model Requirement {
+  id                String           @id @default(uuid())
+  orgId             String
+  title             String
+  partCategory      String?
+  processCategories String[]         @default([])
+  plantLocation     String?
+  targetAwardDate   DateTime?
+  stage             RequirementStage @default(DRAFT)
+  ownerUserId       String
+  createdAt         DateTime         @default(now())
 
-  @@index([identifier])
+  org         BuyerOrg     @relation(fields: [orgId], references: [id])
+  owner       BuyerUser    @relation("RequirementOwner", fields: [ownerUserId], references: [id])
+  candidates  Candidate[]
+  invitations Invitation[]
+
+  @@index([orgId])
+}
+
+// The seeded "verified" pool. In production this grows from vendor onboarding
+// (out of scope here) — see PRD §5.8 / §7.
+model DirectoryVendor {
+  id                String     @id @default(uuid())
+  legalName         String
+  pan               String?
+  primaryGstin      String?
+  contactEmail      String
+  city              String?
+  state             String?
+  processTags       String[]   @default([])
+  certificationTags String[]   @default([])
+  badgeState        BadgeState @default(VERIFIED)
+  createdAt         DateTime   @default(now())
+
+  candidates Candidate[]
+}
+
+// A vendor attached to a single requirement. Directory adds are SNAPSHOTS —
+// fields are copied in, not referenced, so later directory edits never mutate
+// a candidate. Manual candidates never create a DirectoryVendor row.
+model Candidate {
+  id                String          @id @default(uuid())
+  requirementId     String
+  orgId             String
+  source            CandidateSource
+  directoryVendorId String?
+  legalName         String
+  contactEmail      String
+  contactPhone      String?
+  pan               String?
+  gstin             String?
+  city              String?
+  state             String?
+  inviteStatus      InviteStatus    @default(NOT_INVITED)
+  createdAt         DateTime        @default(now())
+
+  requirement     Requirement      @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  org             BuyerOrg         @relation(fields: [orgId], references: [id])
+  directoryVendor DirectoryVendor? @relation(fields: [directoryVendorId], references: [id], onDelete: SetNull)
+  invitation      Invitation?
+
+  @@index([requirementId])
+  @@index([orgId])
+}
+
+model Invitation {
+  id            String           @id @default(uuid())
+  candidateId   String           @unique
+  requirementId String
+  orgId         String
+  tokenHash     String           @unique
+  // DEV ONLY — stored so the magic link is visible locally. TODO: remove in prod.
+  magicTokenPlain String?
+  email         String
+  expiresAt     DateTime
+  openedAt      DateTime?
+  resendCount   Int              @default(0)
+  status        InvitationStatus @default(SENT)
+  createdAt     DateTime         @default(now())
+
+  candidate   Candidate   @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  requirement Requirement @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  org         BuyerOrg    @relation(fields: [orgId], references: [id])
+
+  @@index([orgId])
 }

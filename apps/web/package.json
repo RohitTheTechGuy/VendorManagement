@@ -4,6 +4,6 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {"dev": "vite", "build": "tsc -p tsconfig.json --noEmit && vite build", "typecheck": "tsc -p tsconfig.json --noEmit", "test": "vitest run"},
-  "dependencies": {"@vendor-management/shared": "*", "@vitejs/plugin-react": "^4.5.2", "@tailwindcss/vite": "^4.1.11", "react": "^19.1.0", "react-dom": "^19.1.0", "react-router-dom": "^7.6.2", "zod": "^3.25.67"},
+  "dependencies": {"@vendor-management/shared": "*", "@vitejs/plugin-react": "^4.5.2", "@tailwindcss/vite": "^4.1.11", "axios": "^1.7.9", "react": "^19.1.0", "react-dom": "^19.1.0", "react-router-dom": "^7.6.2", "zod": "^3.25.67"},
   "devDependencies": {"@testing-library/jest-dom": "^6.6.3", "@testing-library/react": "^16.3.0", "@types/react": "^19.1.6", "@types/react-dom": "^19.1.6", "jsdom": "^26.1.0", "typescript": "~5.8.3", "vite": "^6.3.5", "tailwindcss": "^4.1.11", "vitest": "^3.2.3"}
 }
