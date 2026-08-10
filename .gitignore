@@ -2,8 +2,21 @@
 
 .idea
 
+
+# Project specific
+apps/api/node_modules/
+apps/web/node_modules/
+packages/shared/node_modules/
+
+apps/api/dist/
+apps/web/dist/
+packages/db/dist/
+packages/shared/dist/
+
 # dependencies
 /node_modules
+
+
 /.pnp
 .pnp.js
 

@@ -1,0 +1,11 @@
+{
+  "name": "@vendor-management/db",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {"build": "tsc -p tsconfig.json", "typecheck": "tsc -p tsconfig.json --noEmit", "db:generate": "prisma generate --schema=prisma/schema.prisma", "db:migrate": "prisma migrate dev --schema=prisma/schema.prisma"},
+  "dependencies": {"@prisma/client": "^6.9.0", "prisma": "^6.9.0"},
+  "devDependencies": {"typescript": "~5.8.3"}
+}
