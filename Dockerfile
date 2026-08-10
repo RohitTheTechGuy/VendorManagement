@@ -32,6 +32,7 @@ COPY packages/shared/ packages/shared/
 COPY packages/db/ packages/db/
 RUN npm run build --workspace packages/shared
 RUN npx prisma generate --schema=packages/db/prisma/schema.prisma
+RUN npm run build --workspace packages/db
 RUN npm run build --workspace apps/api
 
 # Stage 3: Run both applications in one image
