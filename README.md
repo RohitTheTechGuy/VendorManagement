@@ -29,35 +29,53 @@ place to onboard, track, and evaluate suppliers across their lifecycle.
 
 ## Tech stack
 
-- **Next.js** (React) — application framework and UI
-- **TypeScript** — type-safe application code
-- **Vercel** — deployment target
+- **Frontend** — React 19, Vite, TypeScript, and React Router 7
+- **Backend** — Express 5 and TypeScript
+- **Authentication** — Better Auth inside the Express API
+- **Database** — Neon Postgres
+- **Database access** — Prisma
+- **Validation** — Zod
+- **UI** — Tailwind CSS and shadcn/ui
+- **Motion** — Paid Animmaster Library components
+- **Tests** — Vitest, React Testing Library, Supertest, and Playwright
+- **Package management** — npm workspaces
+- **Deployment** — One Docker image on Railway
+
+## Application structure
+
+The frontend and backend remain separate applications:
+
+- `apps/web` — React frontend
+- `apps/api` — Express backend
+- `packages/shared` — Shared TypeScript types and Zod schemas
+- `packages/db` — Prisma schema, generated client, and migrations
+
+The Dockerfile builds both applications in separate stages. The Express API serves the built React application in production.
 
 ## Getting started
 
-> Prerequisite: [Node.js](https://nodejs.org/) 18+ and npm.
+> Prerequisite: Node.js 22+ and npm.
 
 ```bash
-# Install dependencies
 npm install
-
-# Run the development server
 npm run dev
 ```
 
-Then open [http://localhost:3000](http://localhost:3000) in your browser.
+The exact local URLs will be documented when the application servers are added.
 
-### Environment variables
+## Deployment
 
-Copy the example environment file and fill in your values (database URL, auth
-secrets, etc.):
+Railway builds the root `Dockerfile` and runs the backend server. The backend serves the frontend build from the same Docker image.
 
-```bash
-cp .env.example .env.local
-```
+Railway checks the backend health endpoint at `/api/health`.
 
-Local env files (`.env`, `.env*.local`) are git-ignored and should never be
-committed.
+## Environment variables
+
+Keep environment values in local `.env` files or Railway environment settings.
+
+Never commit `.env` files, database URLs, authentication secrets, private keys, or other secret values.
+
+The repository ignores local environment files. Use `.env.example` only for empty variable names and safe example values.
 
 ## Project status
 
