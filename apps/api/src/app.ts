@@ -7,6 +7,7 @@ import { env } from "./config/env.js";
 import { healthRouter } from "./routes/health.js";
 import { authRouter } from "./routes/auth.js";
 import { requirementsRouter } from "./routes/requirements.js";
+import { directoryRouter } from "./routes/directory.js";
 import { errorHandler } from "./middleware/error-handler.js";
 
 export const app = express();
@@ -21,6 +22,7 @@ app.use(express.json({ limit: "2mb" }));
 app.use("/api", healthRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/requirements", requirementsRouter);
+app.use("/api/directory", directoryRouter);
 
 app.all("/api/*splat", (_request, response) => {
   response.status(404).json({ error: "API route not found" });
