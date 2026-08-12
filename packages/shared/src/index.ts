@@ -4,3 +4,7 @@ export * from "./requirement.js";
 export * from "./directory.js";
 export * from "./candidate.js";
 export * from "./invitation.js";
+export * from "./files.js";
+export * from "./contract.js";
+export * from "./link.js";
+export * from "./workflow.js";

@@ -14,13 +14,18 @@ export const loginSchema = z.object({
 });
 export type LoginInput = z.infer<typeof loginSchema>;
 
+export const userTypeSchema = z.enum(["BUYER", "VENDOR"]);
+export type UserType = z.infer<typeof userTypeSchema>;
+
 // The client-safe view of a user — never includes the password hash.
+// Vendors have a null orgId and null role; buyers always have both.
 export const authUserSchema = z.object({
   id: z.string().uuid(),
   email: z.string().email(),
   fullName: z.string().nullable(),
-  role: z.string(),
-  orgId: z.string().uuid(),
+  userType: userTypeSchema,
+  role: z.string().nullable(),
+  orgId: z.string().uuid().nullable(),
 });
 export type AuthUser = z.infer<typeof authUserSchema>;
 

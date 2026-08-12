@@ -1,13 +1,18 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import type { AuthUser, LoginInput, RegisterInput } from "@vendor-management/shared";
+import type { AuthUser, LoginInput, RegisterInput, UserType } from "@vendor-management/shared";
 import { apiLogin, apiLogout, apiMe, apiRegister } from "./auth-api.js";
 
 interface AuthContextValue {
   user: AuthUser | null;
   loading: boolean;
-  login: (input: LoginInput) => Promise<void>;
-  register: (input: RegisterInput) => Promise<void>;
+  // Convenience projections of the current user's identity for route guards.
+  userType: UserType | null;
+  role: string | null;
+  login: (input: LoginInput) => Promise<AuthUser>;
+  register: (input: RegisterInput) => Promise<AuthUser>;
   logout: () => Promise<void>;
+  // Re-read the session (used after a magic-link redeem sets the cookie server-side).
+  refresh: () => Promise<AuthUser | null>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -37,11 +42,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value: AuthContextValue = {
     user,
     loading,
-    login: async (input) => setUser(await apiLogin(input)),
-    register: async (input) => setUser(await apiRegister(input)),
+    userType: user?.userType ?? null,
+    role: user?.role ?? null,
+    // Return the user so callers can route by userType immediately after login.
+    login: async (input) => {
+      const u = await apiLogin(input);
+      setUser(u);
+      return u;
+    },
+    register: async (input) => {
+      const u = await apiRegister(input);
+      setUser(u);
+      return u;
+    },
     logout: async () => {
       await apiLogout();
       setUser(null);
+    },
+    refresh: async () => {
+      const u = await apiMe();
+      setUser(u);
+      return u;
     },
   };
 

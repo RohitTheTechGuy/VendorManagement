@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import type { Candidate, InviteStatus, RequirementDetail } from "@vendor-management/shared";
+import type { Candidate, InviteStatus, LinkState, RequirementDetail } from "@vendor-management/shared";
 import { getRequirement, removeCandidate } from "../lib/candidates-api.js";
 import { errorMessage } from "../lib/auth-api.js";
 import { formatDate } from "../lib/format.js";
 import { AppShell } from "../components/AppShell.js";
 import { AddCandidateModal } from "../components/AddCandidateModal.js";
 import { SendInvitesModal } from "../components/SendInvitesModal.js";
+import { StatusBadge } from "../components/StatusBadge.js";
+import { VendorDrawer } from "../components/VendorDrawer.js";
 import { Button, Card, Spinner, StageBadge, cn } from "../components/ui.js";
 
 type Load =
@@ -27,6 +29,7 @@ export function RequirementDetailPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [sendOpen, setSendOpen] = useState(false);
   const [rowError, setRowError] = useState<string | null>(null);
+  const [drawerLink, setDrawerLink] = useState<string | null>(null);
 
   function load() {
     setState({ kind: "loading" });
@@ -77,9 +80,17 @@ export function RequirementDetailPage() {
           onAdd={() => setModalOpen(true)}
           onSend={() => setSendOpen(true)}
           onRemove={onRemove}
+          onOpenLink={setDrawerLink}
           rowError={rowError}
         />
       )}
+
+      <VendorDrawer
+        linkId={drawerLink}
+        open={drawerLink !== null}
+        onClose={() => setDrawerLink(null)}
+        onChanged={load}
+      />
 
       {state.kind === "ready" && (
         <>
@@ -107,12 +118,14 @@ function Ready({
   onAdd,
   onSend,
   onRemove,
+  onOpenLink,
   rowError,
 }: {
   detail: RequirementDetail;
   onAdd: () => void;
   onSend: () => void;
   onRemove: (c: Candidate) => void;
+  onOpenLink: (linkId: string) => void;
   rowError: string | null;
 }) {
   const { title, stage, partCategory, plantLocation, targetAwardDate, processCategories, candidates } = detail;
@@ -170,7 +183,8 @@ function Ready({
                   <th className="px-4 py-3 font-medium">Vendor</th>
                   <th className="px-4 py-3 font-medium">Contact</th>
                   <th className="px-4 py-3 font-medium">Source</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Invite</th>
+                  <th className="px-4 py-3 font-medium">Engagement</th>
                   <th className="px-4 py-3" />
                 </tr>
               </thead>
@@ -201,6 +215,20 @@ function Ready({
                         <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", status.className)}>
                           {status.label}
                         </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        {c.link ? (
+                          <button
+                            type="button"
+                            onClick={() => onOpenLink(c.link!.id)}
+                            className="transition hover:opacity-80"
+                            title="Open vendor"
+                          >
+                            <StatusBadge state={c.link.state as LinkState} />
+                          </button>
+                        ) : (
+                          <span className="text-xs text-slate-300">—</span>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-right">
                         <button

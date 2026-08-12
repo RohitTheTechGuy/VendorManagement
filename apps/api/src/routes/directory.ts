@@ -3,10 +3,11 @@ import type { Prisma } from "@prisma/client";
 import { directoryQuerySchema, type DirectoryVendor } from "@vendor-management/shared";
 import { prisma } from "@vendor-management/db";
 import { requireAuth } from "../middleware/require-auth.js";
+import { requireBuyer, buyerOrgId } from "../middleware/authz.js";
 
 export const directoryRouter = Router();
 
-directoryRouter.use(requireAuth);
+directoryRouter.use(requireAuth, requireBuyer);
 
 directoryRouter.get("/", async (req, res, next) => {
   try {
@@ -25,7 +26,7 @@ directoryRouter.get("/", async (req, res, next) => {
     // Exclude vendors already added to this requirement (org-scoped).
     if (requirementId) {
       const added = await prisma.candidate.findMany({
-        where: { requirementId, orgId: req.user!.orgId, directoryVendorId: { not: null } },
+        where: { requirementId, orgId: buyerOrgId(req), directoryVendorId: { not: null } },
         select: { directoryVendorId: true },
       });
       const ids = added.map((a) => a.directoryVendorId).filter((v): v is string => Boolean(v));

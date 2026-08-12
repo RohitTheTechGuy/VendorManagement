@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import type { CookieOptions } from "express";
+import type { BuyerRole, UserType } from "@prisma/client";
 import { env } from "../config/env.js";
 
 const BCRYPT_COST = 12;
@@ -8,9 +9,14 @@ const TOKEN_TTL_SECONDS = 7 * 24 * 60 * 60; // 7 days
 
 export const AUTH_COOKIE = "token";
 
+// The claims we sign into the JWT. userType + role drive authorization on every
+// route (see middleware/authz.ts). orgId is null for vendors; role is null for
+// vendors (and could be any BuyerRole for buyers).
 export interface JwtClaims {
   userId: string;
-  orgId: string;
+  orgId: string | null;
+  userType: UserType;
+  role: BuyerRole | null;
 }
 
 export function hashPassword(plain: string): Promise<string> {
@@ -30,11 +36,18 @@ export function verifyToken(token: string): JwtClaims {
   if (
     typeof decoded === "string" ||
     typeof decoded.userId !== "string" ||
-    typeof decoded.orgId !== "string"
+    (decoded.orgId !== null && typeof decoded.orgId !== "string") ||
+    (decoded.userType !== "BUYER" && decoded.userType !== "VENDOR") ||
+    (decoded.role !== null && typeof decoded.role !== "string")
   ) {
     throw new Error("Invalid token payload");
   }
-  return { userId: decoded.userId, orgId: decoded.orgId };
+  return {
+    userId: decoded.userId,
+    orgId: decoded.orgId,
+    userType: decoded.userType,
+    role: (decoded.role as BuyerRole | null) ?? null,
+  };
 }
 
 // httpOnly so JS can't read it; sameSite=lax for normal navigation; secure in prod.

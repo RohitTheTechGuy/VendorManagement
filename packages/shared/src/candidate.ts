@@ -25,6 +25,14 @@ const gstinField = z
   .refine((v) => GSTIN_REGEX.test(v), "Invalid GSTIN format")
   .optional();
 
+// A candidate's engagement, once it has redeemed its invite (else null).
+export const candidateLinkSchema = z.object({
+  id: z.string().uuid(),
+  state: z.string(),
+  prequalScore: z.number().nullable(),
+});
+export type CandidateLink = z.infer<typeof candidateLinkSchema>;
+
 export const candidateSchema = z.object({
   id: z.string().uuid(),
   requirementId: z.string().uuid(),
@@ -38,6 +46,7 @@ export const candidateSchema = z.object({
   city: z.string().nullable(),
   state: z.string().nullable(),
   inviteStatus: inviteStatusSchema,
+  link: candidateLinkSchema.nullable().optional(),
   createdAt: z.string(),
 });
 export type Candidate = z.infer<typeof candidateSchema>;

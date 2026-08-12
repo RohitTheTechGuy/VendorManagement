@@ -10,8 +10,23 @@ describe("auth lib", () => {
   });
 
   it("signs a JWT and verifies its claims round-trip", () => {
-    const token = signToken({ userId: "user-1", orgId: "org-1" });
-    expect(verifyToken(token)).toEqual({ userId: "user-1", orgId: "org-1" });
+    const token = signToken({ userId: "user-1", orgId: "org-1", userType: "BUYER", role: "OWNER" });
+    expect(verifyToken(token)).toEqual({
+      userId: "user-1",
+      orgId: "org-1",
+      userType: "BUYER",
+      role: "OWNER",
+    });
+  });
+
+  it("round-trips a vendor token (null orgId and role)", () => {
+    const token = signToken({ userId: "vendor-1", orgId: null, userType: "VENDOR", role: null });
+    expect(verifyToken(token)).toEqual({
+      userId: "vendor-1",
+      orgId: null,
+      userType: "VENDOR",
+      role: null,
+    });
   });
 
   it("rejects a tampered or malformed token", () => {

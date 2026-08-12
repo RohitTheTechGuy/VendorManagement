@@ -13,6 +13,7 @@ import {
 import { prisma } from "@vendor-management/db";
 import { env } from "../config/env.js";
 import { requireAuth } from "../middleware/require-auth.js";
+import { requireBuyer, buyerOrgId } from "../middleware/authz.js";
 import { validateBody } from "../middleware/validate.js";
 import { sendInviteEmail } from "../lib/email.js";
 
@@ -20,8 +21,9 @@ const INVITE_TTL_MS = 14 * 24 * 60 * 60 * 1000;
 
 export const requirementsRouter = Router();
 
-// Every route is org-scoped from the JWT — a buyer never sees another org's data.
-requirementsRouter.use(requireAuth);
+// Buyer-only, and every route is org-scoped from the JWT — a buyer never sees
+// another org's data, and a vendor token is rejected outright.
+requirementsRouter.use(requireAuth, requireBuyer);
 
 interface RequirementRow {
   id: string;
@@ -63,6 +65,7 @@ interface CandidateRow {
   state: string | null;
   inviteStatus: Candidate["inviteStatus"];
   createdAt: Date;
+  link: { id: string; state: string; prequalScore: number | null } | null;
 }
 
 function toCandidate(c: CandidateRow): Candidate {
@@ -79,6 +82,7 @@ function toCandidate(c: CandidateRow): Candidate {
     city: c.city,
     state: c.state,
     inviteStatus: c.inviteStatus,
+    link: c.link,
     createdAt: c.createdAt.toISOString(),
   };
 }
@@ -86,7 +90,7 @@ function toCandidate(c: CandidateRow): Candidate {
 requirementsRouter.get("/", async (req, res, next) => {
   try {
     const rows = await prisma.requirement.findMany({
-      where: { orgId: req.user!.orgId },
+      where: { orgId: buyerOrgId(req) },
       include: { _count: { select: { candidates: true } } },
       orderBy: { createdAt: "desc" },
     });
@@ -101,7 +105,7 @@ requirementsRouter.post("/", validateBody(createRequirementSchema), async (req, 
     const input = req.body as CreateRequirementInput;
     const created = await prisma.requirement.create({
       data: {
-        orgId: req.user!.orgId,
+        orgId: buyerOrgId(req),
         ownerUserId: req.user!.userId,
         title: input.title,
         partCategory: input.partCategory ?? null,
@@ -122,7 +126,12 @@ requirementsRouter.post("/", validateBody(createRequirementSchema), async (req, 
 async function loadDetail(orgId: string, id: string): Promise<RequirementDetail | null> {
   const r = await prisma.requirement.findFirst({
     where: { id, orgId },
-    include: { candidates: { orderBy: { createdAt: "asc" } } },
+    include: {
+      candidates: {
+        orderBy: { createdAt: "asc" },
+        include: { link: { select: { id: true, state: true, prequalScore: true } } },
+      },
+    },
   });
   if (!r) return null;
   return {
@@ -140,7 +149,7 @@ async function loadDetail(orgId: string, id: string): Promise<RequirementDetail 
 
 requirementsRouter.get("/:id", async (req, res, next) => {
   try {
-    const detail = await loadDetail(req.user!.orgId, req.params.id);
+    const detail = await loadDetail(buyerOrgId(req), req.params.id);
     if (!detail) {
       res.status(404).json({ error: "Requirement not found" });
       return;
@@ -153,7 +162,7 @@ requirementsRouter.get("/:id", async (req, res, next) => {
 
 requirementsRouter.post("/:id/candidates", validateBody(addCandidatesSchema), async (req, res, next) => {
   try {
-    const orgId = req.user!.orgId;
+    const orgId = buyerOrgId(req);
     const requirementId = req.params.id as string;
     const { candidates } = req.body as AddCandidatesInput;
 
@@ -249,7 +258,7 @@ requirementsRouter.post("/:id/candidates", validateBody(addCandidatesSchema), as
 requirementsRouter.delete("/:id/candidates/:candidateId", async (req, res, next) => {
   try {
     const candidate = await prisma.candidate.findFirst({
-      where: { id: req.params.candidateId, requirementId: req.params.id, orgId: req.user!.orgId },
+      where: { id: req.params.candidateId, requirementId: req.params.id, orgId: buyerOrgId(req) },
     });
     if (!candidate) {
       res.status(404).json({ error: "Candidate not found" });
@@ -269,7 +278,7 @@ requirementsRouter.delete("/:id/candidates/:candidateId", async (req, res, next)
 // Dispatch magic-link invites to every not-yet-invited candidate.
 requirementsRouter.post("/:id/invites", async (req, res, next) => {
   try {
-    const orgId = req.user!.orgId;
+    const orgId = buyerOrgId(req);
     const requirementId = req.params.id as string;
 
     const requirement = await prisma.requirement.findFirst({

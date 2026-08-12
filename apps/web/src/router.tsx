@@ -5,17 +5,33 @@ import { RegisterPage } from "./routes/register.js";
 import { Dashboard } from "./routes/dashboard.js";
 import { NewRequirement } from "./routes/new-requirement.js";
 import { RequirementDetailPage } from "./routes/requirement-detail.js";
+import { VendorHome } from "./routes/vendor-home.js";
+import { VendorLinkPage } from "./routes/vendor-link.js";
+import { InviteRedeemPage } from "./routes/invite-redeem.js";
+import { ApprovalsPage } from "./routes/approvals.js";
 
 export const router = createBrowserRouter([
   { path: "/login", element: <LoginPage /> },
   { path: "/register", element: <RegisterPage /> },
+  { path: "/invite/:token", element: <InviteRedeemPage /> },
   {
-    element: <ProtectedRoute />,
+    // Buyer shell — a vendor who lands here is bounced to the vendor portal.
+    element: <ProtectedRoute require="BUYER" />,
     children: [
       { path: "/", element: <Dashboard /> },
+      { path: "/approvals", element: <ApprovalsPage /> },
       { path: "/requirements/new", element: <NewRequirement /> },
       { path: "/requirements/:id", element: <RequirementDetailPage /> },
     ],
   },
+  {
+    // Vendor shell — a buyer who lands here is bounced to the buyer console.
+    element: <ProtectedRoute require="VENDOR" />,
+    children: [
+      { path: "/vendor", element: <VendorHome /> },
+      { path: "/vendor/:linkId", element: <VendorLinkPage /> },
+    ],
+  },
+  // Unknown paths go to "/"; the buyer guard then re-routes vendors onward.
   { path: "*", element: <Navigate to="/" replace /> },
 ]);

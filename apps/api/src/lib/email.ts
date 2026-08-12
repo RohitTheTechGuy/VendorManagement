@@ -19,6 +19,33 @@ function inviteHtml({ orgName, requirementTitle, link }: InviteEmailParams): str
     </div>`;
 }
 
+// A generic transactional notification (award, approval, onboarding). Same
+// contract as sendInviteEmail: sends if a key is set, otherwise logs; never
+// throws so a broken provider can't break the workflow.
+export async function sendNotifyEmail(params: { to: string; subject: string; html: string }): Promise<boolean> {
+  if (!env.RESEND_API_KEY) {
+    logger.info({ to: params.to, subject: params.subject }, "[notify] RESEND_API_KEY not set — notification logged instead of emailed");
+    return false;
+  }
+  try {
+    const resend = new Resend(env.RESEND_API_KEY);
+    const { error } = await resend.emails.send({
+      from: env.RESEND_FROM,
+      to: params.to,
+      subject: params.subject,
+      html: params.html,
+    });
+    if (error) {
+      logger.error({ err: error, to: params.to }, "[notify] Resend returned an error — notification logged instead");
+      return false;
+    }
+    return true;
+  } catch (error) {
+    logger.error({ err: error, to: params.to }, "[notify] Resend threw — notification logged instead");
+    return false;
+  }
+}
+
 // Sends the invite via Resend. Returns true if actually sent, false if it was
 // only logged (no API key, or a send failure). NEVER throws — a broken email
 // provider must not break invite dispatch.

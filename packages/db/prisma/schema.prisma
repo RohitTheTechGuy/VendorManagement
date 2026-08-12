@@ -9,6 +9,8 @@ datasource db {
 
 // ---------------------------------------------------------------------------
 // Enums (translate the spec's `text + CHECK` constraints to Postgres enums).
+// Enums give us DB-level validity for free; the code-level transition() guard
+// remains the single gate for *legal* state changes (see lib/link-state.ts).
 // ---------------------------------------------------------------------------
 
 enum RequirementStage {
@@ -45,6 +47,135 @@ enum BadgeState {
   STALE
 }
 
+// --- Phase 9: two-sided identity + the state spine -------------------------
+
+// One users table for both sides of the app.
+enum UserType {
+  BUYER
+  VENDOR
+}
+
+// Buyer roles. OWNER runs the requirement; the other four are approvers.
+// Null for vendors (see AppUser.role).
+enum BuyerRole {
+  OWNER
+  QUALITY
+  FINANCE
+  TAX
+  LEGAL
+}
+
+// The ONLY legal states for a vendor_buyer_link. Every change goes through
+// transition() in lib/link-state.ts, validated against the transition table.
+enum LinkState {
+  INVITED
+  PREQUAL_IN_PROGRESS
+  PREQUAL_SUBMITTED
+  PREQUAL_UNDER_REVIEW
+  PREQUAL_CLEARED
+  AWARDED
+  FULL_IN_PROGRESS
+  FULL_SUBMITTED
+  FULL_UNDER_REVIEW
+  CONTRACTS_IN_PROGRESS
+  APPROVED
+  ERP_SYNCING
+  ONBOARDED
+  // Terminals
+  REJECTED
+  ON_HOLD
+  WITHDRAWN
+  ERP_FAILED
+  EXPIRED
+}
+
+enum LinkStage {
+  PREQUAL
+  FULL
+}
+
+// Who acted / whose side an event or record belongs to.
+enum ActorSide {
+  VENDOR
+  BUYER
+  SYSTEM
+}
+
+// A human party side (no SYSTEM) — for contract uploads and comments.
+enum PartySide {
+  VENDOR
+  BUYER
+}
+
+enum SubmissionStatus {
+  IN_PROGRESS
+  SUBMITTED
+}
+
+enum DocumentStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum VerificationCheckType {
+  PAN
+  GST
+  UDYAM
+  PENNY_DROP
+  GST_FILINGS
+}
+
+enum VerificationStatus {
+  RUNNING
+  PASSED
+  FAILED
+  NEEDS_REVIEW
+  ACCEPTED // reviewer accepted a NEEDS_REVIEW (partial) match
+  REJECTED // reviewer rejected a NEEDS_REVIEW (partial) match
+}
+
+enum ReviewTaskStatus {
+  PENDING
+  APPROVED
+  CHANGES_REQUESTED
+}
+
+enum ApprovalDecisionType {
+  APPROVED
+  CHANGES_REQUESTED
+}
+
+// The six per-link contracts. Names are an assumption pending confirmation
+// (the brief mandates "six contracts" but does not name them).
+enum ContractType {
+  NDA
+  MSA
+  QUALITY_AGREEMENT
+  SUPPLY_AGREEMENT
+  PRICING_AGREEMENT
+  DATA_PROCESSING
+}
+
+enum ContractState {
+  DRAFT_PENDING
+  DRAFT_UPLOADED
+  VENDOR_REVIEW
+  CHANGES_REQUESTED
+  REVISED
+  AGREED
+  AWAITING_SIGNATURES
+  PARTIALLY_EXECUTED
+  EXECUTED
+}
+
+enum ContractVersionKind {
+  DRAFT
+  REVISED
+  VENDOR_SIGNED
+  BUYER_SIGNED
+}
+
 // ---------------------------------------------------------------------------
 // Buyer tenant
 // ---------------------------------------------------------------------------
@@ -54,23 +185,31 @@ model BuyerOrg {
   legalName String
   createdAt DateTime @default(now())
 
-  users        BuyerUser[]
+  appUsers     AppUser[]
   requirements Requirement[]
   candidates   Candidate[]
   invitations  Invitation[]
+  links        VendorBuyerLink[]
 }
 
-model BuyerUser {
-  id           String   @id @default(uuid())
-  orgId        String
-  email        String   @unique
-  passwordHash String
-  fullName     String?
-  role         String   @default("buyer")
-  createdAt    DateTime @default(now())
+// Replaces BuyerUser. Holds both buyers (org + role set) and vendors
+// (org/role null, password_hash null until they redeem a magic link).
+model AppUser {
+  id             String     @id @default(uuid())
+  orgId          String? // null for vendors
+  userType       UserType
+  role           BuyerRole? // null for vendors
+  email          String     @unique
+  passwordHash   String? // null until a vendor sets a password
+  fullName       String?
+  vendorEntityId String? // null for buyers; soft reference to a vendor entity
+  createdAt      DateTime   @default(now())
 
-  org               BuyerOrg      @relation(fields: [orgId], references: [id])
-  ownedRequirements Requirement[] @relation("RequirementOwner")
+  org               BuyerOrg?          @relation(fields: [orgId], references: [id])
+  ownedRequirements Requirement[]      @relation("RequirementOwner")
+  vendorLinks       VendorBuyerLink[]  @relation("VendorUser")
+  reviewTasks       ReviewTask[]       @relation("AssignedApprover")
+  approvalDecisions ApprovalDecision[] @relation("DecidedBy")
 
   @@index([orgId])
 }
@@ -87,10 +226,11 @@ model Requirement {
   ownerUserId       String
   createdAt         DateTime         @default(now())
 
-  org         BuyerOrg     @relation(fields: [orgId], references: [id])
-  owner       BuyerUser    @relation("RequirementOwner", fields: [ownerUserId], references: [id])
+  org         BuyerOrg          @relation(fields: [orgId], references: [id])
+  owner       AppUser           @relation("RequirementOwner", fields: [ownerUserId], references: [id])
   candidates  Candidate[]
   invitations Invitation[]
+  links       VendorBuyerLink[]
 
   @@index([orgId])
 }
@@ -136,29 +276,272 @@ model Candidate {
   org             BuyerOrg         @relation(fields: [orgId], references: [id])
   directoryVendor DirectoryVendor? @relation(fields: [directoryVendorId], references: [id], onDelete: SetNull)
   invitation      Invitation?
+  link            VendorBuyerLink?
 
   @@index([requirementId])
   @@index([orgId])
 }
 
 model Invitation {
-  id            String           @id @default(uuid())
-  candidateId   String           @unique
-  requirementId String
-  orgId         String
-  tokenHash     String           @unique
+  id              String           @id @default(uuid())
+  candidateId     String           @unique
+  requirementId   String
+  orgId           String
+  tokenHash       String           @unique
   // DEV ONLY — stored so the magic link is visible locally. TODO: remove in prod.
   magicTokenPlain String?
-  email         String
-  expiresAt     DateTime
-  openedAt      DateTime?
-  resendCount   Int              @default(0)
-  status        InvitationStatus @default(SENT)
-  createdAt     DateTime         @default(now())
+  email           String
+  expiresAt       DateTime
+  openedAt        DateTime?
+  resendCount     Int              @default(0)
+  status          InvitationStatus @default(SENT)
+  createdAt       DateTime         @default(now())
 
   candidate   Candidate   @relation(fields: [candidateId], references: [id], onDelete: Cascade)
   requirement Requirement @relation(fields: [requirementId], references: [id], onDelete: Cascade)
   org         BuyerOrg    @relation(fields: [orgId], references: [id])
 
   @@index([orgId])
+}
+
+// ---------------------------------------------------------------------------
+// The state spine: one link per engaged candidate. See lib/link-state.ts.
+// ---------------------------------------------------------------------------
+
+model VendorBuyerLink {
+  id                String     @id @default(uuid())
+  candidateId       String     @unique
+  requirementId     String
+  orgId             String
+  vendorUserId      String? // null until the vendor logs in
+  state             LinkState  @default(INVITED)
+  stage             LinkStage?
+  prequalScore      Int?
+  awardedAt         DateTime?
+  onboardedAt       DateTime?
+  erpVendorCode     String?
+  currentStateSince DateTime   @default(now())
+  createdAt         DateTime   @default(now())
+
+  candidate          Candidate           @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  requirement        Requirement         @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  org                BuyerOrg            @relation(fields: [orgId], references: [id])
+  vendorUser         AppUser?            @relation("VendorUser", fields: [vendorUserId], references: [id], onDelete: SetNull)
+  events             LinkEvent[]
+  submissions        Submission[]
+  fieldValues        FieldValue[]
+  documents          Document[]
+  verificationChecks VerificationCheck[]
+  reviewTasks        ReviewTask[]
+  approvalDecisions  ApprovalDecision[]
+  contracts          Contract[]
+  contractVersions   ContractVersion[]
+  contractComments   ContractComment[]
+
+  @@index([requirementId])
+  @@index([orgId])
+  @@index([vendorUserId])
+}
+
+// APPEND-ONLY audit log. Never update or delete a row. Drives the tracker
+// and the dual TAT computation.
+model LinkEvent {
+  id         String     @id @default(uuid())
+  linkId     String
+  fromState  LinkState?
+  toState    LinkState
+  actorType  ActorSide
+  actorId    String?
+  side       ActorSide
+  note       String?
+  occurredAt DateTime   @default(now())
+
+  link VendorBuyerLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
+
+  @@index([linkId])
+}
+
+// One per stage (prequal | full) per link.
+model Submission {
+  id                String           @id @default(uuid())
+  linkId            String
+  stage             LinkStage
+  status            SubmissionStatus @default(IN_PROGRESS)
+  submittedAt       DateTime?
+  resolvedChecklist Json?
+  createdAt         DateTime         @default(now())
+
+  link        VendorBuyerLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  fieldValues FieldValue[]
+  documents   Document[]
+
+  @@unique([linkId, stage])
+  @@index([linkId])
+}
+
+model FieldValue {
+  id           String   @id @default(uuid())
+  submissionId String
+  linkId       String
+  fieldKey     String
+  value        String?
+  source       String?
+  updatedAt    DateTime @updatedAt
+
+  submission Submission      @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  link       VendorBuyerLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
+
+  @@unique([submissionId, fieldKey])
+  @@index([linkId])
+  @@index([submissionId])
+}
+
+model Document {
+  id                   String         @id @default(uuid())
+  submissionId         String?
+  linkId               String
+  checklistItemKey     String
+  fileBlobId           String
+  fileName             String
+  mimeType             String
+  sizeBytes            Int
+  status               DocumentStatus @default(PENDING)
+  rejectionReason      String?
+  version              Int            @default(1)
+  supersedesDocumentId String?
+  uploadedAt           DateTime       @default(now())
+
+  submission   Submission?     @relation(fields: [submissionId], references: [id], onDelete: SetNull)
+  link         VendorBuyerLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  fileBlob     FileBlob        @relation(fields: [fileBlobId], references: [id])
+  supersedes   Document?       @relation("DocumentSupersede", fields: [supersedesDocumentId], references: [id])
+  supersededBy Document[]      @relation("DocumentSupersede")
+
+  @@index([linkId])
+  @@index([submissionId])
+}
+
+model VerificationCheck {
+  id           String                @id @default(uuid())
+  linkId       String
+  checkType    VerificationCheckType
+  subjectValue String?
+  status       VerificationStatus    @default(RUNNING)
+  matchScore   Int?
+  detail       Json?
+  ranAt        DateTime?
+  expiresAt    DateTime?
+  createdAt    DateTime              @default(now())
+
+  link VendorBuyerLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
+
+  @@index([linkId])
+}
+
+// One per approver role (quality|finance|tax|legal) per link.
+model ReviewTask {
+  id             String           @id @default(uuid())
+  linkId         String
+  role           BuyerRole
+  assignedUserId String?
+  status         ReviewTaskStatus @default(PENDING)
+  slaHours       Int?
+  createdAt      DateTime         @default(now())
+
+  link         VendorBuyerLink    @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  assignedUser AppUser?           @relation("AssignedApprover", fields: [assignedUserId], references: [id], onDelete: SetNull)
+  decisions    ApprovalDecision[]
+
+  @@unique([linkId, role])
+  @@index([linkId])
+}
+
+model ApprovalDecision {
+  id           String               @id @default(uuid())
+  reviewTaskId String
+  linkId       String
+  decision     ApprovalDecisionType
+  comment      String?
+  decidedById  String?
+  decidedAt    DateTime             @default(now())
+
+  reviewTask ReviewTask      @relation(fields: [reviewTaskId], references: [id], onDelete: Cascade)
+  link       VendorBuyerLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  decidedBy  AppUser?        @relation("DecidedBy", fields: [decidedById], references: [id], onDelete: SetNull)
+
+  @@index([linkId])
+  @@index([reviewTaskId])
+}
+
+// One per contract_type per link. Each is an independent state machine.
+model Contract {
+  id               String        @id @default(uuid())
+  linkId           String
+  contractType     ContractType
+  state            ContractState @default(DRAFT_PENDING)
+  currentVersionId String?       @unique
+  dispatchedAt     DateTime?
+  executedAt       DateTime?
+  createdAt        DateTime      @default(now())
+
+  link           VendorBuyerLink   @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  currentVersion ContractVersion?  @relation("CurrentVersion", fields: [currentVersionId], references: [id], onDelete: SetNull)
+  versions       ContractVersion[] @relation("ContractVersions")
+
+  @@unique([linkId, contractType])
+  @@index([linkId])
+}
+
+// Immutable. "Revise" = a new row; never edit an existing version.
+model ContractVersion {
+  id                  String              @id @default(uuid())
+  contractId          String
+  linkId              String
+  versionNo           Int
+  fileBlobId          String
+  fileName            String
+  uploadedBySide      PartySide
+  kind                ContractVersionKind
+  supersedesVersionId String?
+  createdAt           DateTime            @default(now())
+
+  contract           Contract          @relation("ContractVersions", fields: [contractId], references: [id], onDelete: Cascade)
+  link               VendorBuyerLink   @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  fileBlob           FileBlob          @relation(fields: [fileBlobId], references: [id])
+  currentForContract Contract?         @relation("CurrentVersion")
+  supersedes         ContractVersion?  @relation("VersionSupersede", fields: [supersedesVersionId], references: [id])
+  supersededBy       ContractVersion[] @relation("VersionSupersede")
+  comments           ContractComment[]
+
+  @@unique([contractId, versionNo])
+  @@index([contractId])
+  @@index([linkId])
+}
+
+// Redline comments, one thread per version.
+model ContractComment {
+  id                String    @id @default(uuid())
+  contractVersionId String
+  linkId            String
+  authorSide        PartySide
+  body              String
+  createdAt         DateTime  @default(now())
+
+  contractVersion ContractVersion @relation(fields: [contractVersionId], references: [id], onDelete: Cascade)
+  link            VendorBuyerLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
+
+  @@index([linkId])
+  @@index([contractVersionId])
+}
+
+// The actual bytes, isolated. `data` is base64 and is NEVER selected in a
+// list/detail query — only via the download route (Phase 15).
+model FileBlob {
+  id        String   @id @default(uuid())
+  data      String
+  sha256    String?
+  createdAt DateTime @default(now())
+
+  documents        Document[]
+  contractVersions ContractVersion[]
 }

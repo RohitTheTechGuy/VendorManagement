@@ -14,9 +14,18 @@ const prisma = new PrismaClient();
 
 const RESET = process.argv.includes("--reset");
 
-// A known dev login — printed after seeding.
+// Known dev logins — printed after seeding. One password for all dev accounts.
 const SEED_USER_EMAIL = "buyer@meridian.test";
 const SEED_USER_PASSWORD = "Password123!";
+
+// The four parallel approver roles, each a separate account (so authorization
+// is actually exercised). Kept alongside the OWNER above.
+const APPROVERS: { email: string; fullName: string; role: "QUALITY" | "FINANCE" | "TAX" | "LEGAL" }[] = [
+  { email: "quality@meridian.test", fullName: "Anil Verma", role: "QUALITY" },
+  { email: "finance@meridian.test", fullName: "Meera Iyer", role: "FINANCE" },
+  { email: "tax@meridian.test", fullName: "Rahul Nair", role: "TAX" },
+  { email: "legal@meridian.test", fullName: "Sana Khan", role: "LEGAL" },
+];
 
 function gstinFor(stateCode: string, pan: string): string {
   // Format-plausible GSTIN: <state><PAN>1Z5 (15 chars). Not a real checksum.
@@ -60,7 +69,7 @@ async function main(): Promise<void> {
   if (RESET) {
     // Truncate all app tables so a re-run yields exactly the seed set.
     await prisma.$executeRawUnsafe(
-      'TRUNCATE "Invitation","Candidate","Requirement","DirectoryVendor","BuyerUser","BuyerOrg" RESTART IDENTITY CASCADE',
+      'TRUNCATE "Invitation","Candidate","Requirement","DirectoryVendor","AppUser","BuyerOrg" RESTART IDENTITY CASCADE',
     );
     console.log("[seed] --reset: truncated all app tables");
   }
@@ -73,11 +82,20 @@ async function main(): Promise<void> {
 
   // Login user (idempotent by unique email).
   const passwordHash = await bcrypt.hash(SEED_USER_PASSWORD, 12);
-  const user = await prisma.buyerUser.upsert({
+  const user = await prisma.appUser.upsert({
     where: { email: SEED_USER_EMAIL },
-    update: { passwordHash, orgId: org.id, fullName: "Priya Sharma", role: "buyer" },
-    create: { email: SEED_USER_EMAIL, passwordHash, orgId: org.id, fullName: "Priya Sharma", role: "buyer" },
+    update: { passwordHash, orgId: org.id, fullName: "Priya Sharma", userType: "BUYER", role: "OWNER" },
+    create: { email: SEED_USER_EMAIL, passwordHash, orgId: org.id, fullName: "Priya Sharma", userType: "BUYER", role: "OWNER" },
   });
+
+  // Four parallel approver accounts in the same org (idempotent by email).
+  for (const a of APPROVERS) {
+    await prisma.appUser.upsert({
+      where: { email: a.email },
+      update: { passwordHash, orgId: org.id, fullName: a.fullName, userType: "BUYER", role: a.role },
+      create: { email: a.email, passwordHash, orgId: org.id, fullName: a.fullName, userType: "BUYER", role: a.role },
+    });
+  }
 
   // Directory vendors (skip if already populated, unless reset cleared them).
   const existingVendors = await prisma.directoryVendor.count();
@@ -114,9 +132,13 @@ async function main(): Promise<void> {
 
   console.log("\n[seed] done:");
   console.log(`  orgs=${orgCount} vendors=${vendorCount} requirements=${reqCount} candidates=${candCount} invitations=${inviteCount}`);
-  console.log("\n[seed] Login with:");
-  console.log(`  email:    ${SEED_USER_EMAIL}`);
-  console.log(`  password: ${SEED_USER_PASSWORD}\n`);
+  console.log("\n[seed] Buyer logins (all use the same password):");
+  console.log(`  password: ${SEED_USER_PASSWORD}`);
+  console.log(`  OWNER    ${SEED_USER_EMAIL}`);
+  for (const a of APPROVERS) {
+    console.log(`  ${a.role.padEnd(8)} ${a.email}`);
+  }
+  console.log("");
 }
 
 type Vendor = Awaited<ReturnType<PrismaClient["directoryVendor"]["findMany"]>>[number];

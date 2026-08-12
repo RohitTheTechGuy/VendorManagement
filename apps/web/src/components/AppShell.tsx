@@ -1,8 +1,17 @@
 import type { ReactNode } from "react";
+import { NavLink } from "react-router-dom";
 import { useAuth } from "../lib/auth-context.js";
-import { Button } from "./ui.js";
+import { Button, cn } from "./ui.js";
 
-export function AppShell({ children }: { children: ReactNode }) {
+const APPROVER_ROLES = ["QUALITY", "FINANCE", "TAX", "LEGAL"];
+
+export function AppShell({
+  children,
+  subtitle = "Buyer console",
+}: {
+  children: ReactNode;
+  subtitle?: string;
+}) {
   const { user, logout } = useAuth();
 
   return (
@@ -15,11 +24,39 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
             <div className="leading-tight">
               <p className="text-sm font-semibold">Vendor Management</p>
-              <p className="text-xs text-slate-400">Buyer console</p>
+              <p className="text-xs text-slate-400">{subtitle}</p>
             </div>
+            {user?.userType === "BUYER" && (
+              <nav className="ml-4 flex items-center gap-1 text-sm">
+                {user.role === "OWNER" && (
+                  <NavLink
+                    to="/"
+                    end
+                    className={({ isActive }) =>
+                      cn("rounded-md px-2.5 py-1 font-medium", isActive ? "bg-slate-100 text-slate-900" : "text-slate-500 hover:text-slate-700")
+                    }
+                  >
+                    Requirements
+                  </NavLink>
+                )}
+                {APPROVER_ROLES.includes(user.role ?? "") && (
+                  <NavLink
+                    to="/approvals"
+                    className={({ isActive }) =>
+                      cn("rounded-md px-2.5 py-1 font-medium", isActive ? "bg-slate-100 text-slate-900" : "text-slate-500 hover:text-slate-700")
+                    }
+                  >
+                    Approvals
+                  </NavLink>
+                )}
+              </nav>
+            )}
           </div>
           <div className="flex items-center gap-3 text-sm">
-            <span className="hidden text-slate-500 sm:inline">{user?.email}</span>
+            <span className="hidden text-slate-500 sm:inline">
+              {user?.email}
+              {user?.role ? ` · ${user.role}` : ""}
+            </span>
             <Button variant="secondary" size="sm" onClick={() => void logout()}>
               Log out
             </Button>

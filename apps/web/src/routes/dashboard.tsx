@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import type { RequirementStage, RequirementSummary } from "@vendor-management/shared";
 import { getRequirements } from "../lib/requirements-api.js";
 import { errorMessage } from "../lib/auth-api.js";
+import { useAuth } from "../lib/auth-context.js";
 import { STAGE_ORDER, STAGE_STYLE } from "../lib/stage.js";
 import { AppShell } from "../components/AppShell.js";
 import { Button, Card, Spinner, cn } from "../components/ui.js";
@@ -14,6 +15,7 @@ type Load =
   | { kind: "ready"; requirements: RequirementSummary[] };
 
 export function Dashboard() {
+  const { role } = useAuth();
   const [state, setState] = useState<Load>({ kind: "loading" });
   const [filter, setFilter] = useState<RequirementStage | "ALL">("ALL");
 
@@ -25,6 +27,9 @@ export function Dashboard() {
   }
 
   useEffect(load, []);
+
+  // Approvers have no requirements list — send them to their queue.
+  if (role && role !== "OWNER") return <Navigate to="/approvals" replace />;
 
   return (
     <AppShell>

@@ -29,9 +29,19 @@ export function Button({ variant = "primary", size = "md", className, ...props }
   return <button className={cn(BUTTON_BASE, BUTTON_VARIANT[variant], BUTTON_SIZE[size], className)} {...props} />;
 }
 
-export function Card({ className, children }: { className?: string; children: ReactNode }) {
+export function Card({
+  className,
+  children,
+  onClick,
+}: {
+  className?: string;
+  children: ReactNode;
+  onClick?: () => void;
+}) {
   return (
-    <div className={cn("rounded-2xl border border-slate-200 bg-white shadow-sm", className)}>{children}</div>
+    <div className={cn("rounded-2xl border border-slate-200 bg-white shadow-sm", className)} onClick={onClick}>
+      {children}
+    </div>
   );
 }
 
