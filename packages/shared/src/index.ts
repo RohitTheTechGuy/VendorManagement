@@ -8,3 +8,5 @@ export * from "./files.js";
 export * from "./contract.js";
 export * from "./link.js";
 export * from "./workflow.js";
+export * from "./team.js";
+export * from "./activity.js";

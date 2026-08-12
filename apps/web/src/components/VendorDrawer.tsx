@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   CHECK_META,
   PREQUAL_CHECKS,
@@ -311,6 +312,10 @@ export function VendorDrawer({
                     APPROVER_ROLES.includes(role ?? "") &&
                     link.state === "CONTRACTS_IN_PROGRESS" &&
                     t.status !== "APPROVED";
+                  // Legal can only approve once every contract is executed.
+                  const allExecuted =
+                    link.contracts.length > 0 && link.contracts.every((c) => c.state === "EXECUTED");
+                  const approveBlocked = t.role === "LEGAL" && !allExecuted;
                   return (
                     <div key={t.id} className="rounded-lg border border-slate-200 px-3 py-2">
                       <div className="flex items-center justify-between">
@@ -335,7 +340,8 @@ export function VendorDrawer({
                           />
                           <Button
                             size="sm"
-                            disabled={busy}
+                            disabled={busy || approveBlocked}
+                            title={approveBlocked ? "All contracts must be executed first" : undefined}
                             onClick={() => void act(() => decideTask(t.id, "approve", approverComment || undefined))}
                           >
                             Approve
@@ -349,6 +355,11 @@ export function VendorDrawer({
                             Request changes
                           </Button>
                         </div>
+                      )}
+                      {mine && approveBlocked && (
+                        <p className="mt-1 text-xs text-amber-600">
+                          Approve unlocks once all contracts are executed by both parties.
+                        </p>
                       )}
                     </div>
                   );
@@ -397,14 +408,22 @@ export function VendorDrawer({
                     Onboarded — vendor code{" "}
                     <span className="font-mono font-semibold">{link.erpVendorCode}</span>
                   </p>
-                  <a
-                    href={erpPackUrl(link.id)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                  >
-                    Download ERP pack
-                  </a>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <a
+                      href={erpPackUrl(link.id)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                    >
+                      Download ERP pack
+                    </a>
+                    <Link
+                      to="/directory"
+                      className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                    >
+                      Directory ↗
+                    </Link>
+                  </div>
                 </div>
               )}
             </Card>

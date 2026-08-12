@@ -31,8 +31,18 @@ filesRouter.get("/:id", async (req, res, next) => {
             link: { select: { orgId: true, vendorUserId: true } },
           },
         });
+    // A comment may carry a marked-up attachment (vendor redline).
+    const comment = doc || version
+      ? null
+      : await prisma.contractComment.findFirst({
+          where: { fileBlobId },
+          select: {
+            fileName: true,
+            link: { select: { orgId: true, vendorUserId: true } },
+          },
+        });
 
-    const link = doc?.link ?? version?.link;
+    const link = doc?.link ?? version?.link ?? comment?.link;
     if (!link) {
       res.status(404).json({ error: "Not found" });
       return;
@@ -56,7 +66,7 @@ filesRouter.get("/:id", async (req, res, next) => {
     }
 
     const buffer = Buffer.from(blob.data, "base64");
-    const fileName = doc?.fileName ?? version?.fileName ?? "file";
+    const fileName = doc?.fileName ?? version?.fileName ?? comment?.fileName ?? "file";
     const mimeType = doc?.mimeType ?? "application/pdf"; // contract versions are always PDF
     const disposition = req.query.download === "1" ? "attachment" : "inline";
 

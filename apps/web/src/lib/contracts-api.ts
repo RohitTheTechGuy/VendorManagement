@@ -16,8 +16,19 @@ export const uploadRevision = (contractId: string, file: File) => uploadAnd(cont
 export const buyerSign = (contractId: string, file: File) => uploadAnd(contractId, "buyer-sign", file);
 
 // Vendor actions
-export async function vendorRequestChanges(contractId: string, comment: string): Promise<void> {
-  await http.post(`/api/contracts/${contractId}/request-changes`, { comment });
+export async function vendorRequestChanges(
+  contractId: string,
+  comment: string,
+  file?: File,
+): Promise<void> {
+  let fileBlobId: string | undefined;
+  let fileName: string | undefined;
+  if (file) {
+    const uploaded = await uploadFile(file, "contract");
+    fileBlobId = uploaded.fileBlobId;
+    fileName = uploaded.fileName;
+  }
+  await http.post(`/api/contracts/${contractId}/request-changes`, { comment, fileBlobId, fileName });
 }
 export async function vendorAgree(contractId: string): Promise<void> {
   await http.post(`/api/contracts/${contractId}/agree`);

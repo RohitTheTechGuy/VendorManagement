@@ -64,9 +64,13 @@ function ContractRow({
 }) {
   const [busy, setBusy] = useState(false);
   const [comment, setComment] = useState("");
+  const [changeFile, setChangeFile] = useState<File | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
   const current = contract.versions.find((v) => v.id === contract.currentVersionId);
+  const signedVersions = contract.versions.filter(
+    (v) => v.kind === "VENDOR_SIGNED" || v.kind === "BUYER_SIGNED",
+  );
   const vendorTurn = VENDOR_TURN_CONTRACT_STATES.includes(contract.state);
   const signing = SIGNING_STATES.includes(contract.state);
 
@@ -104,11 +108,41 @@ function ContractRow({
         </a>
       )}
 
+      {signedVersions.length > 0 && (
+        <ul className="mt-1 space-y-0.5">
+          {signedVersions.map((v) => (
+            <li key={v.id}>
+              <a
+                href={fileUrl(v.fileBlobId)}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 hover:underline"
+              >
+                ✅ {v.uploadedBySide === "VENDOR" ? "Vendor-signed" : "Buyer-signed"}: {v.fileName}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+
       {contract.comments.length > 0 && (
         <ul className="mt-2 space-y-1">
           {contract.comments.map((cm) => (
             <li key={cm.id} className="text-xs text-slate-500">
               <span className="font-medium">{cm.authorSide === "VENDOR" ? "Vendor" : "Legal"}:</span> {cm.body}
+              {cm.fileBlobId && (
+                <>
+                  {" "}
+                  <a
+                    href={fileUrl(cm.fileBlobId)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-medium text-indigo-600 hover:underline"
+                  >
+                    📎 {cm.fileName ?? "attachment"}
+                  </a>
+                </>
+              )}
             </li>
           ))}
         </ul>
@@ -135,19 +169,44 @@ function ContractRow({
       {side === "VENDOR" && (
         <div className="mt-2 space-y-2">
           {vendorTurn && (
-            <div className="flex flex-wrap items-center gap-2">
-              <input
-                placeholder="Comment to request changes"
+            <div className="space-y-2">
+              <textarea
+                rows={2}
+                placeholder="Describe the changes you'd like — e.g. “Clause 4 liability cap is too broad, see the attached markup.”"
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                className="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
               />
-              <Button size="sm" variant="secondary" disabled={busy || !comment} onClick={() => void act(() => vendorRequestChanges(contract.id, comment))}>
-                Request changes
-              </Button>
-              <Button size="sm" disabled={busy} onClick={() => void act(() => vendorAgree(contract.id))}>
-                Agree
-              </Button>
+              <div className="flex flex-wrap items-center gap-2">
+                <label className="cursor-pointer">
+                  <span className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
+                    {changeFile ? `📎 ${changeFile.name}` : "Attach markup (optional)"}
+                  </span>
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    className="hidden"
+                    onChange={(e) => setChangeFile(e.target.files?.[0] ?? null)}
+                  />
+                </label>
+                <div className="flex-1" />
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  disabled={busy || !comment}
+                  onClick={() =>
+                    void act(async () => {
+                      await vendorRequestChanges(contract.id, comment, changeFile ?? undefined);
+                      setChangeFile(null);
+                    })
+                  }
+                >
+                  Request changes
+                </Button>
+                <Button size="sm" disabled={busy} onClick={() => void act(() => vendorAgree(contract.id))}>
+                  Agree
+                </Button>
+              </div>
             </div>
           )}
           {signing && (

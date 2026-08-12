@@ -30,6 +30,20 @@ const RAIL_INDEX: Record<LinkState, number> = {
   EXPIRED: -1,
 };
 
+// Short labels for the rail — the full LINK_STATE_META labels are too long and
+// collide. Falls back to the full label for anything not listed.
+const RAIL_LABEL: Partial<Record<LinkState, string>> = {
+  INVITED: "Invited",
+  PREQUAL_IN_PROGRESS: "Pre-qual",
+  PREQUAL_SUBMITTED: "Submitted",
+  PREQUAL_CLEARED: "Pre-qualified",
+  AWARDED: "Awarded",
+  FULL_SUBMITTED: "Full pack",
+  CONTRACTS_IN_PROGRESS: "Contracts",
+  APPROVED: "Approved",
+  ONBOARDED: "Onboarded",
+};
+
 function Rail({ state }: { state: LinkState }) {
   const active = RAIL_INDEX[state];
   return (
@@ -54,8 +68,13 @@ function Rail({ state }: { state: LinkState }) {
                 )}
               />
             </div>
-            <span className={cn("truncate text-[10px]", current ? "font-semibold text-indigo-600" : "text-slate-400")}>
-              {LINK_STATE_META[milestone].label}
+            <span
+              className={cn(
+                "w-full truncate px-1 text-center text-[10px] leading-tight",
+                current ? "font-semibold text-indigo-600" : "text-slate-400",
+              )}
+            >
+              {RAIL_LABEL[milestone] ?? LINK_STATE_META[milestone].label}
             </span>
           </li>
         );
@@ -103,6 +122,12 @@ export function VendorTracker({ link }: { link: VendorLinkDTO }) {
       {link.erpVendorCode && (
         <p className="text-sm">
           Vendor code: <span className="font-mono font-semibold">{link.erpVendorCode}</span>
+        </p>
+      )}
+
+      {link.state === "ONBOARDED" && (
+        <p className="flex items-center gap-1.5 text-sm font-medium text-emerald-700">
+          <span aria-hidden>✓</span> Listed in directory (Verified)
         </p>
       )}
     </Card>

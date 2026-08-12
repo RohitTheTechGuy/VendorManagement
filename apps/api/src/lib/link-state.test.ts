@@ -10,12 +10,17 @@ import {
 // A minimal fake transaction client that records what transition() does, so we
 // can assert behaviour without a database.
 function fakeTx(currentState: string) {
-  const findUnique = vi.fn().mockResolvedValue({ id: "link-1", state: currentState });
+  const findUnique = vi.fn().mockResolvedValue({ id: "link-1", state: currentState, requirementId: "req-1" });
   const create = vi.fn().mockResolvedValue({});
   const update = vi.fn().mockResolvedValue({ id: "link-1", state: "unused" });
   const tx = {
-    vendorBuyerLink: { findUnique, update },
+    vendorBuyerLink: { findUnique, update, count: vi.fn().mockResolvedValue(0) },
     linkEvent: { create },
+    // syncRequirementStage() reads/updates the parent requirement; stub it out.
+    requirement: {
+      findUnique: vi.fn().mockResolvedValue({ stage: "INVITES_SENT" }),
+      update: vi.fn().mockResolvedValue({}),
+    },
   } as unknown as Prisma.TransactionClient;
   return { tx, findUnique, create, update };
 }

@@ -15,12 +15,14 @@ import {
 import type { BuyerRole } from "@prisma/client";
 import { prisma } from "@vendor-management/db";
 import { requireAuth } from "../middleware/require-auth.js";
-import { requireBuyer, requireOwnLink } from "../middleware/authz.js";
+import { requireBuyer, requireOwnLink, buyerOrgId } from "../middleware/authz.js";
 import { validateBody } from "../middleware/validate.js";
 import { transition } from "../lib/link-state.js";
 import { loadBuyerLinkDetail, mergedFields } from "../lib/buyer-link-dto.js";
 import { checkJoinGate } from "../lib/join-gate.js";
 import { resolveErpIfDue, markErpSyncToFail, ERP_DELAY_MS } from "../lib/erp.js";
+import { listWarmCandidates } from "../lib/directory-sync.js";
+import { buildActivityFeed } from "../lib/activity.js";
 import { sendNotifyEmail } from "../lib/email.js";
 
 // States that mean a requirement already has (or has moved past) an award.
@@ -45,6 +47,15 @@ import {
 
 export const buyerRouter = Router();
 buyerRouter.use(requireAuth, requireBuyer);
+
+// Org-wide activity feed (any buyer in the org). Not link-scoped.
+buyerRouter.get("/activity", async (req, res, next) => {
+  try {
+    res.json({ items: await buildActivityFeed(buyerOrgId(req)) });
+  } catch (error) {
+    next(error);
+  }
+});
 
 // Open the drawer. Reading a submitted link starts the review, and any due
 // verification results are resolved lazily so the buyer always sees fresh state.
@@ -338,6 +349,9 @@ buyerRouter.post("/links/:id/award", requireOwnLink(), async (req, res, next) =>
         })),
         skipDuplicates: true,
       });
+      // The winner is now AWARDED; every other candidate that cleared prequal
+      // becomes a warm lead in the directory (LISTED).
+      await listWarmCandidates(tx, link.requirementId);
     });
 
     // Notify the vendor (best-effort).

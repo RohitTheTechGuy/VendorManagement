@@ -1,5 +1,6 @@
 import type { ActorSide, LinkState, Prisma } from "@prisma/client";
 import { prisma } from "@vendor-management/db";
+import { syncRequirementStage } from "./requirement-stage.js";
 
 /**
  * The single source of truth for legal link transitions.
@@ -81,7 +82,7 @@ async function applyTransition(
 ) {
   const link = await db.vendorBuyerLink.findUnique({
     where: { id: linkId },
-    select: { id: true, state: true },
+    select: { id: true, state: true, requirementId: true },
   });
   if (!link) throw new LinkNotFoundError(linkId);
 
@@ -101,10 +102,15 @@ async function applyTransition(
     },
   });
 
-  return db.vendorBuyerLink.update({
+  const updated = await db.vendorBuyerLink.update({
     where: { id: linkId },
     data: { state: toState, currentStateSince: new Date() },
   });
+
+  // Keep the parent requirement's coarse stage in step with link activity.
+  await syncRequirementStage(db, link.requirementId);
+
+  return updated;
 }
 
 /**

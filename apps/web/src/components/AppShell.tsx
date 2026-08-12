@@ -29,15 +29,25 @@ export function AppShell({
             {user?.userType === "BUYER" && (
               <nav className="ml-4 flex items-center gap-1 text-sm">
                 {user.role === "OWNER" && (
-                  <NavLink
-                    to="/"
-                    end
-                    className={({ isActive }) =>
-                      cn("rounded-md px-2.5 py-1 font-medium", isActive ? "bg-slate-100 text-slate-900" : "text-slate-500 hover:text-slate-700")
-                    }
-                  >
-                    Requirements
-                  </NavLink>
+                  <>
+                    <NavLink
+                      to="/"
+                      end
+                      className={({ isActive }) =>
+                        cn("rounded-md px-2.5 py-1 font-medium", isActive ? "bg-slate-100 text-slate-900" : "text-slate-500 hover:text-slate-700")
+                      }
+                    >
+                      Requirements
+                    </NavLink>
+                    <NavLink
+                      to="/team"
+                      className={({ isActive }) =>
+                        cn("rounded-md px-2.5 py-1 font-medium", isActive ? "bg-slate-100 text-slate-900" : "text-slate-500 hover:text-slate-700")
+                      }
+                    >
+                      Team
+                    </NavLink>
+                  </>
                 )}
                 {APPROVER_ROLES.includes(user.role ?? "") && (
                   <NavLink
@@ -49,6 +59,15 @@ export function AppShell({
                     Approvals
                   </NavLink>
                 )}
+                {/* Every buyer can see the org activity feed. */}
+                <NavLink
+                  to="/activity"
+                  className={({ isActive }) =>
+                    cn("rounded-md px-2.5 py-1 font-medium", isActive ? "bg-slate-100 text-slate-900" : "text-slate-500 hover:text-slate-700")
+                  }
+                >
+                  Activity
+                </NavLink>
               </nav>
             )}
           </div>

@@ -5,10 +5,13 @@ import { RegisterPage } from "./routes/register.js";
 import { Dashboard } from "./routes/dashboard.js";
 import { NewRequirement } from "./routes/new-requirement.js";
 import { RequirementDetailPage } from "./routes/requirement-detail.js";
+import { DirectoryPage } from "./routes/directory.js";
 import { VendorHome } from "./routes/vendor-home.js";
 import { VendorLinkPage } from "./routes/vendor-link.js";
 import { InviteRedeemPage } from "./routes/invite-redeem.js";
 import { ApprovalsPage } from "./routes/approvals.js";
+import { TeamPage } from "./routes/team.js";
+import { ActivityPage } from "./routes/activity.js";
 
 export const router = createBrowserRouter([
   { path: "/login", element: <LoginPage /> },
@@ -19,7 +22,10 @@ export const router = createBrowserRouter([
     element: <ProtectedRoute require="BUYER" />,
     children: [
       { path: "/", element: <Dashboard /> },
+      { path: "/directory", element: <DirectoryPage /> },
       { path: "/approvals", element: <ApprovalsPage /> },
+      { path: "/activity", element: <ActivityPage /> },
+      { path: "/team", element: <TeamPage /> },
       { path: "/requirements/new", element: <NewRequirement /> },
       { path: "/requirements/:id", element: <RequirementDetailPage /> },
     ],

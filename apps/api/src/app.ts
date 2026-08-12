@@ -15,6 +15,7 @@ import { linksRouter } from "./routes/links.js";
 import { buyerRouter } from "./routes/buyer.js";
 import { approverRouter } from "./routes/approver.js";
 import { contractsRouter } from "./routes/contracts.js";
+import { teamRouter } from "./routes/team.js";
 import { errorHandler } from "./middleware/error-handler.js";
 
 export const app = express();
@@ -39,6 +40,7 @@ app.use("/api/links", linksRouter);
 app.use("/api/buyer", buyerRouter);
 app.use("/api/approver", approverRouter);
 app.use("/api/contracts", contractsRouter);
+app.use("/api/team", teamRouter);
 
 app.all("/api/*splat", (_request, response) => {
   response.status(404).json({ error: "API route not found" });

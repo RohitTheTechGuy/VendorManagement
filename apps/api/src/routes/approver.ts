@@ -80,6 +80,21 @@ approverRouter.post(
         return;
       }
 
+      // Legal owns the contracts — it can only approve once all are executed by
+      // both parties. The other roles approve independently.
+      if (body.decision === "approve" && task.role === "LEGAL") {
+        const [total, executed] = await Promise.all([
+          prisma.contract.count({ where: { linkId: task.linkId } }),
+          prisma.contract.count({ where: { linkId: task.linkId, state: "EXECUTED" } }),
+        ]);
+        if (total === 0 || executed !== total) {
+          res.status(409).json({
+            error: "Legal can approve only after all contracts are signed and executed by both parties.",
+          });
+          return;
+        }
+      }
+
       if (body.decision === "approve") {
         await prisma.$transaction(async (tx) => {
           await tx.reviewTask.update({ where: { id: task.id }, data: { status: "APPROVED" } });

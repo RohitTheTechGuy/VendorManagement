@@ -157,12 +157,19 @@ contractsRouter.post(
       if (!VENDOR_TURN_CONTRACT_STATES.includes(c.state)) {
         return void res.status(409).json({ error: "It's not your turn to act on this contract." });
       }
-      const { comment } = req.body as ContractCommentInput;
+      const { comment, fileBlobId, fileName } = req.body as ContractCommentInput;
       assertContractTransition(c.state, "CHANGES_REQUESTED");
       await prisma.$transaction(async (tx) => {
         if (c.currentVersionId) {
           await tx.contractComment.create({
-            data: { contractVersionId: c.currentVersionId, linkId: c.linkId, authorSide: "VENDOR", body: comment },
+            data: {
+              contractVersionId: c.currentVersionId,
+              linkId: c.linkId,
+              authorSide: "VENDOR",
+              body: comment,
+              fileBlobId: fileBlobId ?? null,
+              fileName: fileName ?? null,
+            },
           });
         }
         await tx.contract.update({ where: { id: c.id }, data: { state: "CHANGES_REQUESTED" } });

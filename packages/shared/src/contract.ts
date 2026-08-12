@@ -65,6 +65,8 @@ export const contractCommentDTOSchema = z.object({
   id: z.string().uuid(),
   authorSide: z.enum(["VENDOR", "BUYER"]),
   body: z.string(),
+  fileBlobId: z.string().uuid().nullable(),
+  fileName: z.string().nullable(),
   createdAt: z.string(),
 });
 export type ContractCommentDTO = z.infer<typeof contractCommentDTOSchema>;
@@ -88,5 +90,8 @@ export type ContractUploadInput = z.infer<typeof contractUploadSchema>;
 
 export const contractCommentInputSchema = z.object({
   comment: z.string().trim().min(1, "A comment is required"),
+  // Optional marked-up file attached to the change request.
+  fileBlobId: z.string().uuid().optional(),
+  fileName: z.string().optional(),
 });
 export type ContractCommentInput = z.infer<typeof contractCommentInputSchema>;

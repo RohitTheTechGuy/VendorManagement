@@ -518,17 +518,21 @@ model ContractVersion {
   @@index([linkId])
 }
 
-// Redline comments, one thread per version.
+// Redline comments, one thread per version. A comment may carry an optional
+// marked-up file (e.g. the vendor's redline of the draft).
 model ContractComment {
   id                String    @id @default(uuid())
   contractVersionId String
   linkId            String
   authorSide        PartySide
   body              String
+  fileBlobId        String?
+  fileName          String?
   createdAt         DateTime  @default(now())
 
   contractVersion ContractVersion @relation(fields: [contractVersionId], references: [id], onDelete: Cascade)
   link            VendorBuyerLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  fileBlob        FileBlob?       @relation(fields: [fileBlobId], references: [id], onDelete: SetNull)
 
   @@index([linkId])
   @@index([contractVersionId])
@@ -544,4 +548,5 @@ model FileBlob {
 
   documents        Document[]
   contractVersions ContractVersion[]
+  contractComments ContractComment[]
 }

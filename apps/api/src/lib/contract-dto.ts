@@ -14,7 +14,14 @@ interface ContractWithVersions {
     fileBlobId: string;
     fileName: string;
     createdAt: Date;
-    comments: { id: string; authorSide: "VENDOR" | "BUYER"; body: string; createdAt: Date }[];
+    comments: {
+      id: string;
+      authorSide: "VENDOR" | "BUYER";
+      body: string;
+      fileBlobId: string | null;
+      fileName: string | null;
+      createdAt: Date;
+    }[];
   }[];
 }
 
@@ -47,6 +54,8 @@ export function mapContract(c: ContractWithVersions): ContractDTO {
         id: cm.id,
         authorSide: cm.authorSide,
         body: cm.body,
+        fileBlobId: cm.fileBlobId,
+        fileName: cm.fileName,
         createdAt: cm.createdAt.toISOString(),
       })),
   };

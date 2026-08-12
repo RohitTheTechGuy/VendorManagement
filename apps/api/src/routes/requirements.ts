@@ -16,6 +16,7 @@ import { requireAuth } from "../middleware/require-auth.js";
 import { requireBuyer, buyerOrgId } from "../middleware/authz.js";
 import { validateBody } from "../middleware/validate.js";
 import { sendInviteEmail } from "../lib/email.js";
+import { syncRequirementStage } from "../lib/requirement-stage.js";
 
 const INVITE_TTL_MS = 14 * 24 * 60 * 60 * 1000;
 
@@ -89,8 +90,13 @@ function toCandidate(c: CandidateRow): Candidate {
 
 requirementsRouter.get("/", async (req, res, next) => {
   try {
+    const orgId = buyerOrgId(req);
+    // Repair any requirement whose coarse stage has drifted from its links.
+    const ids = await prisma.requirement.findMany({ where: { orgId }, select: { id: true } });
+    await Promise.all(ids.map((r) => syncRequirementStage(prisma, r.id)));
+
     const rows = await prisma.requirement.findMany({
-      where: { orgId: buyerOrgId(req) },
+      where: { orgId },
       include: { _count: { select: { candidates: true } } },
       orderBy: { createdAt: "desc" },
     });
@@ -149,7 +155,10 @@ async function loadDetail(orgId: string, id: string): Promise<RequirementDetail 
 
 requirementsRouter.get("/:id", async (req, res, next) => {
   try {
-    const detail = await loadDetail(buyerOrgId(req), req.params.id);
+    const rawId = req.params.id;
+    const reqId = Array.isArray(rawId) ? rawId[0] : rawId;
+    await syncRequirementStage(prisma, reqId);
+    const detail = await loadDetail(buyerOrgId(req), reqId);
     if (!detail) {
       res.status(404).json({ error: "Requirement not found" });
       return;

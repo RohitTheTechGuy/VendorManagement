@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { prisma } from "@vendor-management/db";
 import { transition } from "./link-state.js";
+import { promoteOnboardedToDirectory } from "./directory-sync.js";
 
 // How long the mocked ERP "sync" takes before it resolves.
 export const ERP_DELAY_MS = 1800;
@@ -53,5 +54,7 @@ export async function resolveErpIfDue(linkId: string): Promise<void> {
     );
     // The requirement is now filled.
     await tx.requirement.update({ where: { id: link.requirementId }, data: { stage: "CLOSED" } });
+    // The onboarded vendor joins the shared directory as VERIFIED.
+    await promoteOnboardedToDirectory(tx, linkId);
   });
 }
