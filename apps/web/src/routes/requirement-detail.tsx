@@ -17,10 +17,10 @@ type Load =
   | { kind: "ready"; detail: RequirementDetail };
 
 const INVITE_STATUS: Record<InviteStatus, { label: string; className: string }> = {
-  NOT_INVITED: { label: "Not invited", className: "bg-slate-100 text-slate-600" },
-  INVITED: { label: "Invited", className: "bg-violet-50 text-violet-700" },
-  OPENED: { label: "Opened", className: "bg-sky-50 text-sky-700" },
-  EXPIRED: { label: "Expired", className: "bg-rose-50 text-rose-700" },
+  NOT_INVITED: { label: "Not invited", className: "bg-muted text-muted-foreground" },
+  INVITED: { label: "Invited", className: "bg-violet-500/10 text-violet-700 dark:text-violet-300" },
+  OPENED: { label: "Opened", className: "bg-sky-500/10 text-sky-700 dark:text-sky-300" },
+  EXPIRED: { label: "Expired", className: "bg-rose-500/10 text-rose-700 dark:text-rose-300" },
 };
 
 export function RequirementDetailPage() {
@@ -53,7 +53,7 @@ export function RequirementDetailPage() {
 
   return (
     <AppShell>
-      <Link to="/" className="text-sm text-slate-500 hover:text-slate-700">
+      <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">
         ← Back to requirements
       </Link>
 
@@ -65,7 +65,7 @@ export function RequirementDetailPage() {
 
       {state.kind === "error" && (
         <Card className="mt-8 p-8 text-center">
-          <p className="text-sm text-rose-600">{state.message}</p>
+          <p className="text-sm text-rose-600 dark:text-rose-400">{state.message}</p>
           <Link to="/" className="mt-4 inline-block">
             <Button variant="secondary" size="sm">
               Back to requirements
@@ -139,7 +139,7 @@ function Ready({
             <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
             <StageBadge stage={stage} />
           </div>
-          <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-sm text-slate-500">
+          <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted-foreground">
             {partCategory && <span>{partCategory}</span>}
             {plantLocation && <span>{plantLocation}</span>}
             {targetAwardDate && <span>Award by {formatDate(targetAwardDate)}</span>}
@@ -150,7 +150,7 @@ function Ready({
 
       <div className="mt-8 flex items-center justify-between">
         <h2 className="text-lg font-semibold">
-          Candidates <span className="text-slate-400">({candidates.length})</span>
+          Candidates <span className="text-muted-foreground">({candidates.length})</span>
         </h2>
         <div className="flex items-center gap-3">
           <Button variant="secondary" onClick={onAdd}>
@@ -162,12 +162,12 @@ function Ready({
         </div>
       </div>
 
-      {rowError && <p className="mt-3 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{rowError}</p>}
+      {rowError && <p className="mt-3 rounded-lg bg-rose-500/10 px-3 py-2 text-sm text-rose-700 dark:text-rose-300">{rowError}</p>}
 
       {candidates.length === 0 ? (
         <Card className="mt-4 grid place-items-center gap-2 p-12 text-center">
           <p className="text-base font-semibold">No candidates yet</p>
-          <p className="max-w-sm text-sm text-slate-500">
+          <p className="max-w-sm text-sm text-muted-foreground">
             Add vendors from the verified directory or enter one manually to start.
           </p>
           <Button className="mt-2" onClick={onAdd}>
@@ -179,7 +179,7 @@ function Ready({
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+                <tr className="border-b border-border bg-muted text-left text-xs uppercase tracking-wide text-muted-foreground">
                   <th className="px-4 py-3 font-medium">Vendor</th>
                   <th className="px-4 py-3 font-medium">Contact</th>
                   <th className="px-4 py-3 font-medium">Source</th>
@@ -193,19 +193,19 @@ function Ready({
                   const status = INVITE_STATUS[c.inviteStatus];
                   const canRemove = c.inviteStatus === "NOT_INVITED";
                   return (
-                    <tr key={c.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/60">
+                    <tr key={c.id} className="border-b border-border last:border-0 hover:bg-muted/50">
                       <td className="px-4 py-3">
-                        <div className="font-medium text-slate-800">{c.legalName}</div>
-                        <div className="text-xs text-slate-400">
+                        <div className="font-medium text-foreground">{c.legalName}</div>
+                        <div className="text-xs text-muted-foreground">
                           {[c.city, c.state].filter(Boolean).join(", ") || c.pan || ""}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-slate-600">{c.contactEmail}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{c.contactEmail}</td>
                       <td className="px-4 py-3">
                         <span
                           className={cn(
                             "rounded-md px-2 py-0.5 text-xs font-medium",
-                            c.source === "DIRECTORY" ? "bg-indigo-50 text-indigo-700" : "bg-slate-100 text-slate-600",
+                            c.source === "DIRECTORY" ? "bg-indigo-500/10 text-indigo-700 dark:text-indigo-300" : "bg-muted text-muted-foreground",
                           )}
                         >
                           {c.source === "DIRECTORY" ? "Directory" : "Manual"}
@@ -227,7 +227,7 @@ function Ready({
                             <StatusBadge state={c.link.state as LinkState} />
                           </button>
                         ) : (
-                          <span className="text-xs text-slate-300">—</span>
+                          <span className="text-xs text-muted-foreground">—</span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-right">
@@ -239,8 +239,8 @@ function Ready({
                           className={cn(
                             "rounded-md px-2 py-1 text-xs font-medium transition-colors",
                             canRemove
-                              ? "text-rose-600 hover:bg-rose-50"
-                              : "cursor-not-allowed text-slate-300",
+                              ? "text-rose-600 dark:text-rose-400 hover:bg-rose-500/10"
+                              : "cursor-not-allowed text-muted-foreground",
                           )}
                         >
                           Remove

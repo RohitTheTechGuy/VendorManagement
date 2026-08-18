@@ -33,9 +33,9 @@ import { fileUrl } from "../lib/files-api.js";
 const APPROVER_ROLES = ["QUALITY", "FINANCE", "TAX", "LEGAL"];
 
 const TASK_STATUS_STYLE: Record<string, string> = {
-  PENDING: "bg-slate-100 text-slate-600",
-  APPROVED: "bg-emerald-50 text-emerald-700",
-  CHANGES_REQUESTED: "bg-amber-50 text-amber-700",
+  PENDING: "bg-muted text-muted-foreground",
+  APPROVED: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+  CHANGES_REQUESTED: "bg-amber-500/10 text-amber-700 dark:text-amber-300",
 };
 
 const PREQUAL_STATES = new Set([
@@ -47,12 +47,12 @@ const PREQUAL_STATES = new Set([
 ]);
 
 const CHECK_STATUS_STYLE: Record<string, string> = {
-  RUNNING: "bg-sky-50 text-sky-700",
-  PASSED: "bg-emerald-50 text-emerald-700",
-  ACCEPTED: "bg-emerald-50 text-emerald-700",
-  FAILED: "bg-rose-50 text-rose-700",
-  REJECTED: "bg-rose-50 text-rose-700",
-  NEEDS_REVIEW: "bg-amber-50 text-amber-700",
+  RUNNING: "bg-sky-500/10 text-sky-700 dark:text-sky-300",
+  PASSED: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+  ACCEPTED: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+  FAILED: "bg-rose-500/10 text-rose-700 dark:text-rose-300",
+  REJECTED: "bg-rose-500/10 text-rose-700 dark:text-rose-300",
+  NEEDS_REVIEW: "bg-amber-500/10 text-amber-700 dark:text-amber-300",
 };
 
 function CheckRow({
@@ -81,14 +81,14 @@ function CheckRow({
   }
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 px-3 py-2">
+    <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border px-3 py-2">
       <div>
         <span className="text-sm font-medium">{CHECK_META[type].label}</span>
         {check?.matchScore != null && status !== "RUNNING" && (
-          <span className="ml-2 text-xs text-slate-400">match {check.matchScore}%</span>
+          <span className="ml-2 text-xs text-muted-foreground">match {check.matchScore}%</span>
         )}
         {typeof check?.detail === "object" && check?.detail !== null && "reason" in check.detail && (
-          <p className="text-xs text-slate-400">{String((check.detail as { reason: unknown }).reason)}</p>
+          <p className="text-xs text-muted-foreground">{String((check.detail as { reason: unknown }).reason)}</p>
         )}
       </div>
       <div className="flex items-center gap-2">
@@ -96,7 +96,7 @@ function CheckRow({
           <span
             className={cn(
               "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
-              CHECK_STATUS_STYLE[status] ?? "bg-slate-100 text-slate-600",
+              CHECK_STATUS_STYLE[status] ?? "bg-muted text-muted-foreground",
             )}
           >
             {running && <Spinner className="h-3 w-3 border-[1.5px]" />}
@@ -171,7 +171,7 @@ export function VendorDrawer({
   return (
     <Modal open={open} onClose={onClose} title="Vendor" maxWidth="max-w-3xl">
       {!link ? (
-        <div className="flex items-center gap-3 py-8 text-slate-400">
+        <div className="flex items-center gap-3 py-8 text-muted-foreground">
           <Spinner /> Loading…
         </div>
       ) : (
@@ -179,12 +179,12 @@ export function VendorDrawer({
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h3 className="text-lg font-semibold">{link.candidate.legalName}</h3>
-              <p className="text-sm text-slate-500">{link.candidate.contactEmail}</p>
+              <p className="text-sm text-muted-foreground">{link.candidate.contactEmail}</p>
             </div>
             <div className="text-right">
               <StatusBadge state={link.state} />
               {link.prequalScore != null && (
-                <p className="mt-1 text-xs text-slate-400">Score {link.prequalScore}</p>
+                <p className="mt-1 text-xs text-muted-foreground">Score {link.prequalScore}</p>
               )}
             </div>
           </div>
@@ -196,7 +196,7 @@ export function VendorDrawer({
               <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
                 {Object.entries(link.fields).map(([k, v]) => (
                   <div key={k} className="contents">
-                    <dt className="text-slate-400">{k}</dt>
+                    <dt className="text-muted-foreground">{k}</dt>
                     <dd className="truncate">{v}</dd>
                   </div>
                 ))}
@@ -211,8 +211,8 @@ export function VendorDrawer({
               <ul className="mt-2 space-y-1 text-sm">
                 {link.documents.map((d) => (
                   <li key={d.id} className="flex items-center justify-between">
-                    <span className="text-slate-500">{d.checklistItemKey}</span>
-                    <a href={fileUrl(d.fileBlobId)} target="_blank" rel="noreferrer" className="font-medium text-indigo-600 hover:underline">
+                    <span className="text-muted-foreground">{d.checklistItemKey}</span>
+                    <a href={fileUrl(d.fileBlobId)} target="_blank" rel="noreferrer" className="font-medium text-primary hover:underline">
                       {d.fileName}
                     </a>
                   </li>
@@ -231,7 +231,7 @@ export function VendorDrawer({
             </div>
           </Card>
 
-          {err && <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{err}</p>}
+          {err && <p className="rounded-lg bg-rose-500/10 px-3 py-2 text-sm text-rose-700 dark:text-rose-300">{err}</p>}
 
           {/* Review actions */}
           {link.state === "PREQUAL_UNDER_REVIEW" && (
@@ -246,7 +246,7 @@ export function VendorDrawer({
                     max={100}
                     value={score}
                     onChange={(e) => setScore(e.target.value)}
-                    className="mt-1 block w-24 rounded-lg border border-slate-300 px-3 py-1.5"
+                    className="mt-1 block w-24 rounded-lg border border-border px-3 py-1.5"
                   />
                 </label>
                 <Button disabled={busy} onClick={() => void act(() => reviewClear(link.id, Number(score)))}>
@@ -261,7 +261,7 @@ export function VendorDrawer({
                     setReason(e.target.value);
                     setNote(e.target.value);
                   }}
-                  className="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                  className="flex-1 rounded-lg border border-border px-3 py-1.5 text-sm"
                 />
                 <Button variant="secondary" disabled={busy || !note} onClick={() => void act(() => requestChanges(link.id, note))}>
                   Request changes
@@ -299,7 +299,7 @@ export function VendorDrawer({
                 <span
                   className={cn(
                     "rounded-full px-2 py-0.5 text-xs font-medium",
-                    link.joinGateOpen ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500",
+                    link.joinGateOpen ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300" : "bg-muted text-muted-foreground",
                   )}
                 >
                   {link.joinGateOpen ? "Gate open" : "Gate closed"}
@@ -317,26 +317,26 @@ export function VendorDrawer({
                     link.contracts.length > 0 && link.contracts.every((c) => c.state === "EXECUTED");
                   const approveBlocked = t.role === "LEGAL" && !allExecuted;
                   return (
-                    <div key={t.id} className="rounded-lg border border-slate-200 px-3 py-2">
+                    <div key={t.id} className="rounded-lg border border-border px-3 py-2">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium">{t.role}</span>
                         <span
                           className={cn(
                             "rounded-full px-2 py-0.5 text-xs font-medium",
-                            TASK_STATUS_STYLE[t.status] ?? "bg-slate-100 text-slate-600",
+                            TASK_STATUS_STYLE[t.status] ?? "bg-muted text-muted-foreground",
                           )}
                         >
                           {t.status.replace("_", " ").toLowerCase()}
                         </span>
                       </div>
-                      {t.lastComment && <p className="mt-1 text-xs text-slate-400">“{t.lastComment}”</p>}
+                      {t.lastComment && <p className="mt-1 text-xs text-muted-foreground">“{t.lastComment}”</p>}
                       {mine && (
                         <div className="mt-2 flex flex-wrap items-center gap-2">
                           <input
                             placeholder="Comment (required to request changes)"
                             value={approverComment}
                             onChange={(e) => setApproverComment(e.target.value)}
-                            className="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                            className="flex-1 rounded-lg border border-border px-3 py-1.5 text-sm"
                           />
                           <Button
                             size="sm"
@@ -357,7 +357,7 @@ export function VendorDrawer({
                         </div>
                       )}
                       {mine && approveBlocked && (
-                        <p className="mt-1 text-xs text-amber-600">
+                        <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
                           Approve unlocks once all contracts are executed by both parties.
                         </p>
                       )}
@@ -390,13 +390,13 @@ export function VendorDrawer({
                 </Button>
               )}
               {link.state === "ERP_SYNCING" && (
-                <p className="flex items-center gap-2 text-sm text-slate-500">
+                <p className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Spinner className="h-4 w-4" /> Creating vendor code…
                 </p>
               )}
               {link.state === "ERP_FAILED" && (
                 <div className="space-y-2">
-                  <p className="text-sm text-rose-700">The ERP push failed.</p>
+                  <p className="text-sm text-rose-700 dark:text-rose-300">The ERP push failed.</p>
                   <Button variant="secondary" disabled={busy} onClick={() => void act(() => retryErp(link.id))}>
                     Retry push
                   </Button>
@@ -413,13 +413,13 @@ export function VendorDrawer({
                       href={erpPackUrl(link.id)}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                      className="inline-flex items-center rounded-lg border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted"
                     >
                       Download ERP pack
                     </a>
                     <Link
                       to="/directory"
-                      className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                      className="inline-flex items-center rounded-lg border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted"
                     >
                       Directory ↗
                     </Link>

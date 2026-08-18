@@ -22,21 +22,21 @@ type Side = "LEGAL" | "VENDOR" | "READONLY";
 const SIGNING_STATES: ContractState[] = ["AWAITING_SIGNATURES", "PARTIALLY_EXECUTED"];
 
 const STATE_STYLE: Record<string, string> = {
-  DRAFT_PENDING: "bg-slate-100 text-slate-600",
-  DRAFT_UPLOADED: "bg-sky-50 text-sky-700",
-  VENDOR_REVIEW: "bg-sky-50 text-sky-700",
-  CHANGES_REQUESTED: "bg-amber-50 text-amber-700",
-  REVISED: "bg-sky-50 text-sky-700",
-  AGREED: "bg-indigo-50 text-indigo-700",
-  AWAITING_SIGNATURES: "bg-indigo-50 text-indigo-700",
-  PARTIALLY_EXECUTED: "bg-violet-50 text-violet-700",
-  EXECUTED: "bg-emerald-50 text-emerald-700",
+  DRAFT_PENDING: "bg-muted text-muted-foreground",
+  DRAFT_UPLOADED: "bg-sky-500/10 text-sky-700 dark:text-sky-300",
+  VENDOR_REVIEW: "bg-sky-500/10 text-sky-700 dark:text-sky-300",
+  CHANGES_REQUESTED: "bg-amber-500/10 text-amber-700 dark:text-amber-300",
+  REVISED: "bg-sky-500/10 text-sky-700 dark:text-sky-300",
+  AGREED: "bg-indigo-500/10 text-indigo-700 dark:text-indigo-300",
+  AWAITING_SIGNATURES: "bg-indigo-500/10 text-indigo-700 dark:text-indigo-300",
+  PARTIALLY_EXECUTED: "bg-violet-500/10 text-violet-700 dark:text-violet-300",
+  EXECUTED: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
 };
 
 function FileButton({ label, onFile, disabled }: { label: string; onFile: (f: File) => void; disabled?: boolean }) {
   return (
     <label className={cn("cursor-pointer", disabled && "pointer-events-none opacity-60")}>
-      <span className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50">
+      <span className="inline-flex items-center rounded-lg border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted">
         {label}
       </span>
       <input
@@ -89,7 +89,7 @@ function ContractRow({
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 px-3 py-2.5">
+    <div className="rounded-lg border border-border px-3 py-2.5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="text-sm font-medium">{CONTRACT_TYPE_LABEL[contract.contractType]}</span>
         <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", STATE_STYLE[contract.state])}>
@@ -102,7 +102,7 @@ function ContractRow({
           href={fileUrl(current.fileBlobId)}
           target="_blank"
           rel="noreferrer"
-          className="mt-1 inline-block text-xs font-medium text-indigo-600 hover:underline"
+          className="mt-1 inline-block text-xs font-medium text-primary hover:underline"
         >
           {current.fileName} (v{current.versionNo})
         </a>
@@ -116,7 +116,7 @@ function ContractRow({
                 href={fileUrl(v.fileBlobId)}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 hover:underline"
+                className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-300 hover:underline"
               >
                 ✅ {v.uploadedBySide === "VENDOR" ? "Vendor-signed" : "Buyer-signed"}: {v.fileName}
               </a>
@@ -128,7 +128,7 @@ function ContractRow({
       {contract.comments.length > 0 && (
         <ul className="mt-2 space-y-1">
           {contract.comments.map((cm) => (
-            <li key={cm.id} className="text-xs text-slate-500">
+            <li key={cm.id} className="text-xs text-muted-foreground">
               <span className="font-medium">{cm.authorSide === "VENDOR" ? "Vendor" : "Legal"}:</span> {cm.body}
               {cm.fileBlobId && (
                 <>
@@ -137,7 +137,7 @@ function ContractRow({
                     href={fileUrl(cm.fileBlobId)}
                     target="_blank"
                     rel="noreferrer"
-                    className="font-medium text-indigo-600 hover:underline"
+                    className="font-medium text-primary hover:underline"
                   >
                     📎 {cm.fileName ?? "attachment"}
                   </a>
@@ -148,7 +148,7 @@ function ContractRow({
         </ul>
       )}
 
-      {err && <p className="mt-1 text-xs text-rose-600">{err}</p>}
+      {err && <p className="mt-1 text-xs text-rose-600 dark:text-rose-400">{err}</p>}
 
       {/* Legal actions */}
       {side === "LEGAL" && (
@@ -175,11 +175,11 @@ function ContractRow({
                 placeholder="Describe the changes you'd like — e.g. “Clause 4 liability cap is too broad, see the attached markup.”"
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-ring"
               />
               <div className="flex flex-wrap items-center gap-2">
                 <label className="cursor-pointer">
-                  <span className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
+                  <span className="inline-flex items-center rounded-lg border border-border bg-card px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted">
                     {changeFile ? `📎 ${changeFile.name}` : "Attach markup (optional)"}
                   </span>
                   <input
@@ -233,7 +233,7 @@ export function ContractsPanel({
     <Card className="space-y-3 p-4">
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-semibold">Contracts</h4>
-        <span className="text-xs text-slate-400">{executed} / {contracts.length} executed</span>
+        <span className="text-xs text-muted-foreground">{executed} / {contracts.length} executed</span>
       </div>
       <div className="space-y-2">
         {contracts.map((c) => (

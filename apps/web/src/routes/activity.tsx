@@ -6,7 +6,7 @@ import { usePolling } from "../lib/use-polling.js";
 
 const SIDE_DOT: Record<ActivityItem["side"], string> = {
   vendor: "bg-amber-500",
-  buyer: "bg-indigo-500",
+  buyer: "bg-primary",
   system: "bg-sky-500",
 };
 
@@ -34,34 +34,34 @@ export function ActivityPage() {
   return (
     <AppShell subtitle="Activity">
       <h1 className="text-2xl font-bold">Activity</h1>
-      <p className="mt-1 text-sm text-slate-500">
+      <p className="mt-1 text-sm text-muted-foreground">
         Everything happening across your vendors — submissions, verifications, approvals, contracts and onboarding.
       </p>
 
       {loading && !items ? (
-        <div className="mt-8 flex items-center gap-3 text-slate-400">
+        <div className="mt-8 flex items-center gap-3 text-muted-foreground">
           <Spinner /> Loading…
         </div>
       ) : !items || items.length === 0 ? (
-        <Card className="mt-6 p-10 text-center text-sm text-slate-500">No activity yet.</Card>
+        <Card className="mt-6 p-10 text-center text-sm text-muted-foreground">No activity yet.</Card>
       ) : (
         <Card className="mt-6 p-2">
-          <ol className="divide-y divide-slate-100">
+          <ol className="divide-y divide-border">
             {items.map((it) => (
               <li key={it.id} className="flex items-start gap-3 px-4 py-3">
                 <span className={cn("mt-1.5 h-2 w-2 shrink-0 rounded-full", SIDE_DOT[it.side])} />
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm text-slate-800">
+                  <p className="text-sm text-foreground">
                     <span className="font-semibold">{it.vendorName}</span>{" "}
-                    <span className="text-slate-600">{it.description}</span>
+                    <span className="text-muted-foreground">{it.description}</span>
                   </p>
-                  <p className="text-xs text-slate-400">{it.requirementTitle}</p>
+                  <p className="text-xs text-muted-foreground">{it.requirementTitle}</p>
                 </div>
                 <div className="shrink-0 text-right">
-                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-500">
+                  <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
                     {CATEGORY_LABEL[it.category]}
                   </span>
-                  <p className="mt-1 text-xs text-slate-400">{relativeTime(it.at)}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{relativeTime(it.at)}</p>
                 </div>
               </li>
             ))}

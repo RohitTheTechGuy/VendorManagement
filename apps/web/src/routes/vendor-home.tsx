@@ -20,7 +20,7 @@ export function VendorHome() {
   if (links === null) {
     return (
       <AppShell subtitle="Vendor portal">
-        <div className="flex items-center gap-3 text-slate-400">
+        <div className="flex items-center gap-3 text-muted-foreground">
           <Spinner /> Loading…
         </div>
       </AppShell>
@@ -35,14 +35,14 @@ export function VendorHome() {
     <AppShell subtitle="Vendor portal">
       <h1 className="text-2xl font-bold">Your onboarding</h1>
       {links.length === 0 ? (
-        <p className="mt-2 text-sm text-slate-500">
+        <p className="mt-2 text-sm text-muted-foreground">
           You have no active onboarding. Open the magic link in your invitation email to get started.
         </p>
       ) : (
         <div className="mt-6 space-y-3">
           {links.map((l) => (
             <Link key={l.id} to={`/vendor/${l.id}`} className="block">
-              <Card className="flex items-center justify-between p-5 transition hover:border-indigo-300">
+              <Card className="flex items-center justify-between p-5 transition hover:border-primary/50">
                 <span className="font-medium">{l.requirementTitle}</span>
                 <StatusBadge state={l.state} />
               </Card>

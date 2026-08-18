@@ -66,10 +66,10 @@ export function InviteRedeemPage() {
   }
 
   return (
-    <main className="min-h-screen grid place-items-center bg-slate-50 p-6 text-slate-900">
+    <main className="min-h-screen grid place-items-center bg-muted p-6 text-foreground">
       <Card className="w-full max-w-sm p-8">
         {phase === "redeeming" && (
-          <div className="flex items-center gap-3 text-slate-500">
+          <div className="flex items-center gap-3 text-muted-foreground">
             <Spinner /> Opening your invitation…
           </div>
         )}
@@ -77,14 +77,14 @@ export function InviteRedeemPage() {
         {phase === "error" && (
           <div>
             <h1 className="text-xl font-bold">Invite link problem</h1>
-            <p className="mt-2 text-sm text-rose-700">{error}</p>
+            <p className="mt-2 text-sm text-rose-700 dark:text-rose-300">{error}</p>
           </div>
         )}
 
         {phase === "set-password" && (
           <form onSubmit={onSetPassword}>
             <h1 className="text-2xl font-bold">Welcome</h1>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-muted-foreground">
               You've been invited to onboard for <span className="font-medium">{title}</span>. Set a
               password to continue.
             </p>
@@ -95,9 +95,9 @@ export function InviteRedeemPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="new-password"
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-indigo-500"
+                className="mt-1 w-full rounded-lg border border-border px-3 py-2 outline-none focus:border-ring"
               />
-              {fieldError && <span className="mt-1 block text-xs text-rose-600">{fieldError}</span>}
+              {fieldError && <span className="mt-1 block text-xs text-rose-600 dark:text-rose-400">{fieldError}</span>}
             </label>
             <Button type="submit" disabled={submitting} className="mt-6 w-full">
               {submitting ? "Saving…" : "Set password & continue"}

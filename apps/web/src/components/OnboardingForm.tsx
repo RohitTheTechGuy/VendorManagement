@@ -22,8 +22,8 @@ function FieldInput({
   invalid: boolean;
 }) {
   const base = cn(
-    "mt-1 w-full rounded-lg border px-3 py-2 outline-none focus:border-indigo-500",
-    invalid ? "border-rose-400" : "border-slate-300",
+    "mt-1 w-full rounded-lg border px-3 py-2 outline-none focus:border-ring",
+    invalid ? "border-rose-400" : "border-border",
   );
 
   if (field.type === "select") {
@@ -58,8 +58,8 @@ function FieldInput({
               className={cn(
                 "rounded-full px-3 py-1 text-sm ring-1 ring-inset transition",
                 on
-                  ? "bg-indigo-600 text-white ring-indigo-600"
-                  : "bg-white text-slate-600 ring-slate-300 hover:bg-slate-50",
+                  ? "bg-primary text-white ring-primary"
+                  : "bg-card text-muted-foreground ring-border hover:bg-muted",
               )}
             >
               {o}
@@ -170,14 +170,14 @@ export function OnboardingForm({
               className={cn("block text-sm font-medium", field.type === "multiselect" && "sm:col-span-2")}
             >
               {field.label}
-              {field.required && <span className="text-rose-500"> *</span>}
+              {field.required && <span className="text-rose-500 dark:text-rose-400"> *</span>}
               <FieldInput
                 field={field}
                 value={values[field.key] ?? ""}
                 onChange={(v) => onField(field.key, v)}
                 invalid={false}
               />
-              {field.help && <span className="mt-1 block text-xs text-slate-400">{field.help}</span>}
+              {field.help && <span className="mt-1 block text-xs text-muted-foreground">{field.help}</span>}
             </label>
           ))}
         </div>
@@ -191,20 +191,20 @@ export function OnboardingForm({
             return (
               <div
                 key={item.key}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 px-4 py-3"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border px-4 py-3"
               >
                 <div>
                   <p className="text-sm font-medium">
                     {item.label}
-                    {item.required && <span className="text-rose-500"> *</span>}
+                    {item.required && <span className="text-rose-500 dark:text-rose-400"> *</span>}
                   </p>
-                  {item.help && <p className="text-xs text-slate-400">{item.help}</p>}
+                  {item.help && <p className="text-xs text-muted-foreground">{item.help}</p>}
                   {doc && (
                     <a
                       href={fileUrl(doc.fileBlobId)}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-xs font-medium text-indigo-600 hover:underline"
+                      className="text-xs font-medium text-primary hover:underline"
                     >
                       {doc.fileName}
                     </a>
@@ -223,7 +223,7 @@ export function OnboardingForm({
                   <label className="cursor-pointer">
                     <span
                       className={cn(
-                        "inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50",
+                        "inline-flex items-center rounded-lg border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted",
                         uploadingKey === item.key && "opacity-60",
                       )}
                     >
@@ -244,7 +244,7 @@ export function OnboardingForm({
       </Card>
 
       {errors.length > 0 && (
-        <div className="rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        <div className="rounded-lg bg-rose-500/10 px-4 py-3 text-sm text-rose-700 dark:text-rose-300">
           <ul className="list-inside list-disc space-y-1">
             {errors.map((e) => (
               <li key={e}>{e}</li>
@@ -254,7 +254,7 @@ export function OnboardingForm({
       )}
 
       <div className="flex items-center justify-end gap-3">
-        <span className="text-xs text-slate-400">{saving ? "Saving…" : "All changes saved"}</span>
+        <span className="text-xs text-muted-foreground">{saving ? "Saving…" : "All changes saved"}</span>
         <Button onClick={() => void onSubmit()} disabled={submitting}>
           {submitting ? "Submitting…" : "Submit for review"}
         </Button>

@@ -5,9 +5,9 @@ import { Card, Spinner, cn } from "../components/ui.js";
 import { getDirectory } from "../lib/candidates-api.js";
 
 const BADGE: Record<DirectoryVendor["badgeState"], { label: string; className: string }> = {
-  VERIFIED: { label: "Verified", className: "bg-emerald-50 text-emerald-700 ring-emerald-200" },
-  LISTED: { label: "Listed", className: "bg-amber-50 text-amber-700 ring-amber-200" },
-  STALE: { label: "Stale", className: "bg-slate-100 text-slate-500 ring-slate-200" },
+  VERIFIED: { label: "Verified", className: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 ring-emerald-500/20" },
+  LISTED: { label: "Listed", className: "bg-amber-500/10 text-amber-700 dark:text-amber-300 ring-amber-500/20" },
+  STALE: { label: "Stale", className: "bg-muted text-muted-foreground ring-border" },
 };
 
 export function DirectoryPage() {
@@ -34,7 +34,7 @@ export function DirectoryPage() {
   return (
     <AppShell subtitle="Directory">
       <h1 className="text-2xl font-bold">Directory</h1>
-      <p className="mt-1 max-w-2xl text-sm text-slate-500">
+      <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
         Your verified vendor pool. Onboarded vendors are added automatically as{" "}
         <strong>Verified</strong>; vendors that cleared pre-qualification but weren't awarded are{" "}
         <strong>Listed</strong> as warm leads.
@@ -45,19 +45,19 @@ export function DirectoryPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by legal name…"
-          className="w-full max-w-sm rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+          className="w-full max-w-sm rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-ring"
         />
       </div>
 
-      <Card className="mt-4 divide-y divide-slate-100 p-0">
+      <Card className="mt-4 divide-y divide-border p-0">
         {vendors === null && !error && (
-          <p className="flex items-center justify-center gap-2 p-8 text-sm text-slate-400">
+          <p className="flex items-center justify-center gap-2 p-8 text-sm text-muted-foreground">
             <Spinner className="h-4 w-4" /> Loading…
           </p>
         )}
-        {error && <p className="p-8 text-center text-sm text-rose-600">{error}</p>}
+        {error && <p className="p-8 text-center text-sm text-rose-600 dark:text-rose-400">{error}</p>}
         {vendors && vendors.length === 0 && (
-          <p className="p-8 text-center text-sm text-slate-400">No vendors match.</p>
+          <p className="p-8 text-center text-sm text-muted-foreground">No vendors match.</p>
         )}
         {vendors?.map((v) => {
           const badge = BADGE[v.badgeState];
@@ -66,7 +66,7 @@ export function DirectoryPage() {
             <div key={v.id} className="flex items-start justify-between gap-3 px-4 py-3">
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="truncate font-medium text-slate-800">{v.legalName}</span>
+                  <span className="truncate font-medium text-foreground">{v.legalName}</span>
                   <span
                     className={cn(
                       "rounded-full px-1.5 py-0.5 text-[10px] font-semibold ring-1 ring-inset",
@@ -76,11 +76,11 @@ export function DirectoryPage() {
                     {badge.label}
                   </span>
                 </div>
-                <div className="mt-0.5 truncate text-xs text-slate-500">
+                <div className="mt-0.5 truncate text-xs text-muted-foreground">
                   {location || "—"}
                   {v.processTags.length > 0 && <> · {v.processTags.slice(0, 3).join(", ")}</>}
                 </div>
-                <div className="mt-0.5 truncate text-xs text-slate-400">{v.contactEmail}</div>
+                <div className="mt-0.5 truncate text-xs text-muted-foreground">{v.contactEmail}</div>
               </div>
             </div>
           );

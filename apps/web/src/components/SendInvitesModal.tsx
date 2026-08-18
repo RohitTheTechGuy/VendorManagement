@@ -46,19 +46,19 @@ export function SendInvitesModal({
     <Modal open={open} onClose={close} title={results ? "Invites sent" : "Send invites"} maxWidth="max-w-lg">
       {results ? (
         <div>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-muted-foreground">
             {results.filter((r) => r.sent).length} emailed ·{" "}
             {results.filter((r) => !r.sent).length} logged to server console (dev).
           </p>
           <ul className="mt-4 space-y-2">
             {results.map((r) => (
-              <li key={r.candidateId} className="rounded-lg border border-slate-200 p-3 text-sm">
+              <li key={r.candidateId} className="rounded-lg border border-border p-3 text-sm">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-medium text-slate-800">{r.email}</span>
+                  <span className="font-medium text-foreground">{r.email}</span>
                   <span
                     className={cn(
                       "rounded-full px-2 py-0.5 text-xs font-medium",
-                      r.sent ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700",
+                      r.sent ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300" : "bg-amber-500/10 text-amber-700 dark:text-amber-300",
                     )}
                   >
                     {r.sent ? "Emailed" : "Logged (dev)"}
@@ -68,7 +68,7 @@ export function SendInvitesModal({
                   href={r.link}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-1 block truncate text-xs text-indigo-600 hover:underline"
+                  className="mt-1 block truncate text-xs text-primary hover:underline"
                 >
                   {r.link}
                 </a>
@@ -81,19 +81,19 @@ export function SendInvitesModal({
         </div>
       ) : (
         <div>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-muted-foreground">
             A magic-link invite will be sent to {pending.length}{" "}
             {pending.length === 1 ? "vendor" : "vendors"}:
           </p>
-          <ul className="mt-3 max-h-56 overflow-y-auto rounded-lg border border-slate-200">
+          <ul className="mt-3 max-h-56 overflow-y-auto rounded-lg border border-border">
             {pending.map((c) => (
-              <li key={c.id} className="border-b border-slate-100 px-3 py-2 text-sm last:border-0">
-                <span className="font-medium text-slate-800">{c.legalName}</span>{" "}
-                <span className="text-slate-400">· {c.contactEmail}</span>
+              <li key={c.id} className="border-b border-border px-3 py-2 text-sm last:border-0">
+                <span className="font-medium text-foreground">{c.legalName}</span>{" "}
+                <span className="text-muted-foreground">· {c.contactEmail}</span>
               </li>
             ))}
           </ul>
-          {error && <p className="mt-3 text-sm text-rose-600">{error}</p>}
+          {error && <p className="mt-3 text-sm text-rose-600 dark:text-rose-400">{error}</p>}
           <div className="mt-5 flex justify-end gap-3">
             <Button variant="secondary" onClick={close}>
               Cancel

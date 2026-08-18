@@ -25,16 +25,16 @@ export function VendorLinkPage() {
     <AppShell subtitle="Vendor portal">
       {!link ? (
         error ? (
-          <Card className="p-6 text-sm text-rose-700">{error}</Card>
+          <Card className="p-6 text-sm text-rose-700 dark:text-rose-300">{error}</Card>
         ) : (
-          <div className="flex items-center gap-3 text-slate-400">
+          <div className="flex items-center gap-3 text-muted-foreground">
             <Spinner /> Loading…
           </div>
         )
       ) : (
         <div className="space-y-6">
           <div>
-            <p className="text-xs uppercase tracking-wide text-slate-400">{link.requirement.buyerOrgName}</p>
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">{link.requirement.buyerOrgName}</p>
             <h1 className="text-2xl font-bold">{link.requirement.title}</h1>
           </div>
 
@@ -46,7 +46,7 @@ export function VendorLinkPage() {
 
           {EDITABLE.has(link.state) && (
             <>
-              <h2 className="text-sm font-medium text-slate-500">
+              <h2 className="text-sm font-medium text-muted-foreground">
                 {STAGE_HEADING[link.state] ?? "Onboarding"}
               </h2>
               {/* key on state so the form resets cleanly when the stage changes */}

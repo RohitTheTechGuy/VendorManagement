@@ -25,7 +25,7 @@ const PROCESS_OPTIONS = [
 const STATE_OPTIONS = ["Maharashtra", "Tamil Nadu", "Haryana", "Gujarat", "Punjab"];
 
 const inputClass =
-  "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20";
+  "mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20";
 
 export function AddCandidateModal({
   open,
@@ -42,7 +42,7 @@ export function AddCandidateModal({
 
   return (
     <Modal open={open} onClose={onClose} title="Add candidate" maxWidth="max-w-2xl">
-      <div className="mb-5 inline-flex rounded-lg bg-slate-100 p-1 text-sm">
+      <div className="mb-5 inline-flex rounded-lg bg-muted p-1 text-sm">
         <TabButton active={tab === "directory"} onClick={() => setTab("directory")}>
           From directory
         </TabButton>
@@ -67,7 +67,7 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
       onClick={onClick}
       className={cn(
         "rounded-md px-3 py-1.5 font-medium transition-colors",
-        active ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700",
+        active ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
       )}
     >
       {children}
@@ -145,9 +145,9 @@ function DirectoryTab({
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search vendors…"
-          className="min-w-[12rem] flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+          className="min-w-[12rem] flex-1 rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-ring"
         />
-        <select value={process} onChange={(e) => setProcess(e.target.value)} className="rounded-lg border border-slate-300 px-2 py-2 text-sm">
+        <select value={process} onChange={(e) => setProcess(e.target.value)} className="rounded-lg border border-border px-2 py-2 text-sm">
           <option value="">All processes</option>
           {PROCESS_OPTIONS.map((p) => (
             <option key={p} value={p}>
@@ -155,7 +155,7 @@ function DirectoryTab({
             </option>
           ))}
         </select>
-        <select value={state} onChange={(e) => setState(e.target.value)} className="rounded-lg border border-slate-300 px-2 py-2 text-sm">
+        <select value={state} onChange={(e) => setState(e.target.value)} className="rounded-lg border border-border px-2 py-2 text-sm">
           <option value="">All states</option>
           {STATE_OPTIONS.map((s) => (
             <option key={s} value={s}>
@@ -165,11 +165,11 @@ function DirectoryTab({
         </select>
       </div>
 
-      <div className="mt-4 max-h-72 overflow-y-auto rounded-lg border border-slate-200">
-        {vendors === null && !loadError && <p className="p-6 text-center text-sm text-slate-400">Loading…</p>}
-        {loadError && <p className="p-6 text-center text-sm text-rose-600">{loadError}</p>}
+      <div className="mt-4 max-h-72 overflow-y-auto rounded-lg border border-border">
+        {vendors === null && !loadError && <p className="p-6 text-center text-sm text-muted-foreground">Loading…</p>}
+        {loadError && <p className="p-6 text-center text-sm text-rose-600 dark:text-rose-400">{loadError}</p>}
         {vendors && vendors.length === 0 && (
-          <p className="p-6 text-center text-sm text-slate-400">No matching vendors (or all already added).</p>
+          <p className="p-6 text-center text-sm text-muted-foreground">No matching vendors (or all already added).</p>
         )}
         {vendors?.map((v) => {
           const isSelected = selected.has(v.id);
@@ -179,14 +179,14 @@ function DirectoryTab({
               key={v.id}
               onClick={() => toggle(v.id)}
               className={cn(
-                "flex w-full items-start gap-3 border-b border-slate-100 px-4 py-3 text-left last:border-0 hover:bg-slate-50",
-                isSelected && "bg-indigo-50/60",
+                "flex w-full items-start gap-3 border-b border-border px-4 py-3 text-left last:border-0 hover:bg-muted",
+                isSelected && "bg-accent",
               )}
             >
               <span
                 className={cn(
                   "mt-0.5 grid h-4 w-4 flex-shrink-0 place-items-center rounded border",
-                  isSelected ? "border-indigo-600 bg-indigo-600 text-white" : "border-slate-300",
+                  isSelected ? "border-primary bg-primary text-white" : "border-border",
                 )}
               >
                 {isSelected && (
@@ -197,14 +197,14 @@ function DirectoryTab({
               </span>
               <span className="min-w-0 flex-1">
                 <span className="flex items-center gap-2">
-                  <span className="truncate font-medium text-slate-800">{v.legalName}</span>
+                  <span className="truncate font-medium text-foreground">{v.legalName}</span>
                   {v.badgeState === "VERIFIED" && (
-                    <span className="rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200">
+                    <span className="rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 ring-1 ring-inset ring-emerald-500/20">
                       Verified
                     </span>
                   )}
                 </span>
-                <span className="mt-0.5 block text-xs text-slate-500">
+                <span className="mt-0.5 block text-xs text-muted-foreground">
                   {[v.city, v.state].filter(Boolean).join(", ")} · {v.processTags.slice(0, 3).join(", ")}
                 </span>
               </span>
@@ -213,10 +213,10 @@ function DirectoryTab({
         })}
       </div>
 
-      {submitError && <p className="mt-3 text-sm text-rose-600">{submitError}</p>}
+      {submitError && <p className="mt-3 text-sm text-rose-600 dark:text-rose-400">{submitError}</p>}
 
       <div className="mt-5 flex items-center justify-between">
-        <span className="text-sm text-slate-500">{selected.size} selected</span>
+        <span className="text-sm text-muted-foreground">{selected.size} selected</span>
         <div className="flex gap-3">
           <Button variant="secondary" onClick={onClose}>
             Cancel
@@ -295,20 +295,20 @@ function ManualTab({
 
   return (
     <form onSubmit={onSubmit}>
-      {formError && <p className="mb-4 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{formError}</p>}
+      {formError && <p className="mb-4 rounded-lg bg-rose-500/10 px-3 py-2 text-sm text-rose-700 dark:text-rose-300">{formError}</p>}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <label className="block text-sm font-medium sm:col-span-2">
-          Vendor name <span className="text-rose-500">*</span>
+          Vendor name <span className="text-rose-500 dark:text-rose-400">*</span>
           <input value={form.legalName} onChange={set("legalName")} className={inputClass} />
-          {fieldErrors.legalName && <span className="mt-1 block text-xs text-rose-600">{fieldErrors.legalName[0]}</span>}
+          {fieldErrors.legalName && <span className="mt-1 block text-xs text-rose-600 dark:text-rose-400">{fieldErrors.legalName[0]}</span>}
         </label>
 
         <label className="block text-sm font-medium">
-          Contact email <span className="text-rose-500">*</span>
+          Contact email <span className="text-rose-500 dark:text-rose-400">*</span>
           <input type="email" value={form.contactEmail} onChange={set("contactEmail")} className={inputClass} />
           {fieldErrors.contactEmail && (
-            <span className="mt-1 block text-xs text-rose-600">{fieldErrors.contactEmail[0]}</span>
+            <span className="mt-1 block text-xs text-rose-600 dark:text-rose-400">{fieldErrors.contactEmail[0]}</span>
           )}
         </label>
 
@@ -320,13 +320,13 @@ function ManualTab({
         <label className="block text-sm font-medium">
           PAN
           <input value={form.pan} onChange={set("pan")} placeholder="AAAAA9999A" className={inputClass} />
-          {panInvalid && <span className="mt-1 block text-xs text-amber-600">Format looks off (AAAAA9999A)</span>}
+          {panInvalid && <span className="mt-1 block text-xs text-amber-600 dark:text-amber-400">Format looks off (AAAAA9999A)</span>}
         </label>
 
         <label className="block text-sm font-medium">
           GSTIN
           <input value={form.gstin} onChange={set("gstin")} placeholder="22AAAAA0000A1Z5" className={inputClass} />
-          {gstinInvalid && <span className="mt-1 block text-xs text-amber-600">Format looks off</span>}
+          {gstinInvalid && <span className="mt-1 block text-xs text-amber-600 dark:text-amber-400">Format looks off</span>}
         </label>
 
         <label className="block text-sm font-medium">

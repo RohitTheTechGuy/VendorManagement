@@ -16,7 +16,7 @@ export function ProtectedRoute({ require }: { require?: UserType }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen grid place-items-center bg-slate-50 text-slate-400">
+      <div className="min-h-screen grid place-items-center bg-muted text-muted-foreground">
         Loading…
       </div>
     );

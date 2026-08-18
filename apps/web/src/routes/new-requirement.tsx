@@ -7,7 +7,7 @@ import { AppShell } from "../components/AppShell.js";
 import { Button, Card, cn } from "../components/ui.js";
 
 const inputClass =
-  "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20";
+  "mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20";
 
 export function NewRequirement() {
   const navigate = useNavigate();
@@ -55,28 +55,28 @@ export function NewRequirement() {
   return (
     <AppShell>
       <div className="mx-auto max-w-2xl">
-        <Link to="/" className="text-sm text-slate-500 hover:text-slate-700">
+        <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">
           ← Back to requirements
         </Link>
 
         <h1 className="mt-3 text-2xl font-bold tracking-tight">New requirement</h1>
-        <p className="mt-1 text-sm text-slate-500">Define the part and process, then shortlist vendors.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Define the part and process, then shortlist vendors.</p>
 
         <Card className="mt-6 p-6">
           <form onSubmit={onSubmit}>
             {formError && (
-              <p className="mb-4 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{formError}</p>
+              <p className="mb-4 rounded-lg bg-rose-500/10 px-3 py-2 text-sm text-rose-700 dark:text-rose-300">{formError}</p>
             )}
 
             <label className="block text-sm font-medium">
-              Title <span className="text-rose-500">*</span>
+              Title <span className="text-rose-500 dark:text-rose-400">*</span>
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g. Forged steering knuckles"
                 className={inputClass}
               />
-              {fieldErrors.title && <span className="mt-1 block text-xs text-rose-600">{fieldErrors.title[0]}</span>}
+              {fieldErrors.title && <span className="mt-1 block text-xs text-rose-600 dark:text-rose-400">{fieldErrors.title[0]}</span>}
             </label>
 
             <label className="mt-4 block text-sm font-medium">
@@ -103,8 +103,8 @@ export function NewRequirement() {
                       className={cn(
                         "rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
                         active
-                          ? "border-indigo-600 bg-indigo-600 text-white"
-                          : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50",
+                          ? "border-primary bg-primary text-white"
+                          : "border-border bg-card text-muted-foreground hover:bg-muted",
                       )}
                     >
                       {p}

@@ -36,7 +36,7 @@ export function Dashboard() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Requirements</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-muted-foreground">
             Create a requirement, shortlist vendors, and dispatch invites.
           </p>
         </div>
@@ -49,14 +49,14 @@ export function Dashboard() {
       </div>
 
       {state.kind === "loading" && (
-        <div className="mt-16 grid place-items-center text-slate-400">
+        <div className="mt-16 grid place-items-center text-muted-foreground">
           <Spinner className="h-6 w-6" />
         </div>
       )}
 
       {state.kind === "error" && (
         <Card className="mt-8 p-8 text-center">
-          <p className="text-sm text-rose-600">{state.message}</p>
+          <p className="text-sm text-rose-600 dark:text-rose-400">{state.message}</p>
           <Button variant="secondary" size="sm" className="mt-4" onClick={load}>
             Try again
           </Button>
@@ -88,11 +88,11 @@ function ReadyView({
   if (requirements.length === 0) {
     return (
       <Card className="mt-8 grid place-items-center gap-3 p-14 text-center">
-        <div className="grid h-12 w-12 place-items-center rounded-full bg-indigo-50 text-indigo-500">
+        <div className="grid h-12 w-12 place-items-center rounded-full bg-indigo-500/10 text-primary">
           <PlusIcon />
         </div>
         <p className="text-base font-semibold">No requirements yet</p>
-        <p className="max-w-sm text-sm text-slate-500">
+        <p className="max-w-sm text-sm text-muted-foreground">
           Create your first requirement to start shortlisting and inviting vendors.
         </p>
         <Link to="/requirements/new" className="mt-1">
@@ -147,13 +147,13 @@ function FilterChip({
       className={cn(
         "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
         active
-          ? "border-indigo-600 bg-indigo-600 text-white"
-          : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50",
+          ? "border-primary bg-primary text-white"
+          : "border-border bg-card text-muted-foreground hover:bg-muted",
       )}
     >
       {dot && <span className={cn("h-1.5 w-1.5 rounded-full", active ? "bg-white/80" : dot)} />}
       {label}
-      <span className={cn("text-xs", active ? "text-white/80" : "text-slate-400")}>{count}</span>
+      <span className={cn("text-xs", active ? "text-white/80" : "text-muted-foreground")}>{count}</span>
     </button>
   );
 }

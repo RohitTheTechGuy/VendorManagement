@@ -54,24 +54,24 @@ function Rail({ state }: { state: LinkState }) {
         return (
           <li key={milestone} className="flex min-w-0 flex-1 flex-col items-center gap-1">
             <div className="flex w-full items-center">
-              <span className={cn("h-0.5 flex-1", i === 0 ? "opacity-0" : done || current ? "bg-indigo-500" : "bg-slate-200")} />
+              <span className={cn("h-0.5 flex-1", i === 0 ? "opacity-0" : done || current ? "bg-primary" : "bg-muted")} />
               <span
                 className={cn(
                   "h-3 w-3 shrink-0 rounded-full",
-                  done ? "bg-indigo-500" : current ? "bg-indigo-500 ring-4 ring-indigo-100" : "bg-slate-300",
+                  done ? "bg-primary" : current ? "bg-primary ring-4 ring-primary/20" : "bg-muted-foreground/30",
                 )}
               />
               <span
                 className={cn(
                   "h-0.5 flex-1",
-                  i === LINK_PROGRESS_RAIL.length - 1 ? "opacity-0" : done ? "bg-indigo-500" : "bg-slate-200",
+                  i === LINK_PROGRESS_RAIL.length - 1 ? "opacity-0" : done ? "bg-primary" : "bg-muted",
                 )}
               />
             </div>
             <span
               className={cn(
                 "w-full truncate px-1 text-center text-[10px] leading-tight",
-                current ? "font-semibold text-indigo-600" : "text-slate-400",
+                current ? "font-semibold text-primary" : "text-muted-foreground",
               )}
             >
               {RAIL_LABEL[milestone] ?? LINK_STATE_META[milestone].label}
@@ -92,30 +92,30 @@ export function VendorTracker({ link }: { link: VendorLinkDTO }) {
     <Card className="space-y-5 p-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <StatusBadge state={link.state} />
-        <span className="text-sm font-medium text-slate-500">{courtLabel}</span>
+        <span className="text-sm font-medium text-muted-foreground">{courtLabel}</span>
       </div>
 
       {RAIL_INDEX[link.state] >= 0 ? (
         <Rail state={link.state} />
       ) : (
-        <p className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">
+        <p className="rounded-lg bg-muted px-3 py-2 text-sm text-muted-foreground">
           This application is {LINK_STATE_META[link.state].label.toLowerCase()}.
         </p>
       )}
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-lg bg-amber-50 px-4 py-3">
-          <p className="text-xs text-amber-700">Pending on you</p>
-          <p className="text-xl font-semibold text-amber-800">{link.tat.vendorPendingDays} days</p>
+        <div className="rounded-lg bg-amber-500/10 px-4 py-3">
+          <p className="text-xs text-amber-700 dark:text-amber-300">Pending on you</p>
+          <p className="text-xl font-semibold text-amber-800 dark:text-amber-300">{link.tat.vendorPendingDays} days</p>
         </div>
-        <div className="rounded-lg bg-indigo-50 px-4 py-3">
-          <p className="text-xs text-indigo-700">Pending on buyer</p>
-          <p className="text-xl font-semibold text-indigo-800">{link.tat.buyerPendingDays} days</p>
+        <div className="rounded-lg bg-indigo-500/10 px-4 py-3">
+          <p className="text-xs text-indigo-700 dark:text-indigo-300">Pending on buyer</p>
+          <p className="text-xl font-semibold text-indigo-800 dark:text-indigo-300">{link.tat.buyerPendingDays} days</p>
         </div>
-        <div className="rounded-lg bg-slate-50 px-4 py-3">
-          <p className="text-xs text-slate-500">Buyer contact</p>
-          <p className="text-sm font-medium text-slate-700">{link.buyerContact?.name ?? "—"}</p>
-          <p className="truncate text-xs text-slate-400">{link.buyerContact?.email}</p>
+        <div className="rounded-lg bg-muted px-4 py-3">
+          <p className="text-xs text-muted-foreground">Buyer contact</p>
+          <p className="text-sm font-medium text-foreground">{link.buyerContact?.name ?? "—"}</p>
+          <p className="truncate text-xs text-muted-foreground">{link.buyerContact?.email}</p>
         </div>
       </div>
 
@@ -126,7 +126,7 @@ export function VendorTracker({ link }: { link: VendorLinkDTO }) {
       )}
 
       {link.state === "ONBOARDED" && (
-        <p className="flex items-center gap-1.5 text-sm font-medium text-emerald-700">
+        <p className="flex items-center gap-1.5 text-sm font-medium text-emerald-700 dark:text-emerald-300">
           <span aria-hidden>✓</span> Listed in directory (Verified)
         </p>
       )}

@@ -1,9 +1,19 @@
 import type { ReactNode } from "react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../lib/auth-context.js";
-import { Button, cn } from "./ui.js";
+import { cn } from "./ui.js";
+import { Button } from "@/components/ui/button";
+import { Logo } from "./Logo.js";
+import { ModeToggle } from "./ModeToggle.js";
 
 const APPROVER_ROLES = ["QUALITY", "FINANCE", "TAX", "LEGAL"];
+
+function navClass({ isActive }: { isActive: boolean }) {
+  return cn(
+    "rounded-md px-2.5 py-1 text-sm font-medium transition-colors",
+    isActive ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground",
+  );
+}
 
 export function AppShell({
   children,
@@ -15,68 +25,45 @@ export function AppShell({
   const { user, logout } = useAuth();
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/80 backdrop-blur">
+    <div className="min-h-screen bg-muted/40 text-foreground">
+      <header className="sticky top-0 z-10 border-b border-border bg-card/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
           <div className="flex items-center gap-2.5">
-            <div className="grid h-8 w-8 place-items-center rounded-lg bg-indigo-600 text-sm font-bold text-white">
-              V
-            </div>
-            <div className="leading-tight">
-              <p className="text-sm font-semibold">Vendor Management</p>
-              <p className="text-xs text-slate-400">{subtitle}</p>
-            </div>
+            <Logo subtitle={subtitle} />
             {user?.userType === "BUYER" && (
-              <nav className="ml-4 flex items-center gap-1 text-sm">
+              <nav className="ml-4 flex items-center gap-1">
                 {user.role === "OWNER" && (
                   <>
-                    <NavLink
-                      to="/"
-                      end
-                      className={({ isActive }) =>
-                        cn("rounded-md px-2.5 py-1 font-medium", isActive ? "bg-slate-100 text-slate-900" : "text-slate-500 hover:text-slate-700")
-                      }
-                    >
+                    <NavLink to="/" end className={navClass}>
                       Requirements
                     </NavLink>
-                    <NavLink
-                      to="/team"
-                      className={({ isActive }) =>
-                        cn("rounded-md px-2.5 py-1 font-medium", isActive ? "bg-slate-100 text-slate-900" : "text-slate-500 hover:text-slate-700")
-                      }
-                    >
+                    <NavLink to="/directory" className={navClass}>
+                      Directory
+                    </NavLink>
+                    <NavLink to="/team" className={navClass}>
                       Team
                     </NavLink>
                   </>
                 )}
                 {APPROVER_ROLES.includes(user.role ?? "") && (
-                  <NavLink
-                    to="/approvals"
-                    className={({ isActive }) =>
-                      cn("rounded-md px-2.5 py-1 font-medium", isActive ? "bg-slate-100 text-slate-900" : "text-slate-500 hover:text-slate-700")
-                    }
-                  >
+                  <NavLink to="/approvals" className={navClass}>
                     Approvals
                   </NavLink>
                 )}
                 {/* Every buyer can see the org activity feed. */}
-                <NavLink
-                  to="/activity"
-                  className={({ isActive }) =>
-                    cn("rounded-md px-2.5 py-1 font-medium", isActive ? "bg-slate-100 text-slate-900" : "text-slate-500 hover:text-slate-700")
-                  }
-                >
+                <NavLink to="/activity" className={navClass}>
                   Activity
                 </NavLink>
               </nav>
             )}
           </div>
-          <div className="flex items-center gap-3 text-sm">
-            <span className="hidden text-slate-500 sm:inline">
+          <div className="flex items-center gap-2 text-sm">
+            <span className="hidden text-muted-foreground sm:inline">
               {user?.email}
               {user?.role ? ` · ${user.role}` : ""}
             </span>
-            <Button variant="secondary" size="sm" onClick={() => void logout()}>
+            <ModeToggle />
+            <Button variant="outline" size="sm" onClick={() => void logout()}>
               Log out
             </Button>
           </div>
