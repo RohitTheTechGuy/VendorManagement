@@ -19,7 +19,7 @@ export function ApprovalsPage() {
 
   return (
     <AppShell subtitle="Approver queue">
-      <h1 className="text-2xl font-bold">My approvals</h1>
+      <h1 className="font-display text-2xl font-semibold">My approvals</h1>
       <p className="mt-1 text-sm text-muted-foreground">Tasks assigned to your role. You only see and action your own.</p>
 
       {loading && !tasks ? (

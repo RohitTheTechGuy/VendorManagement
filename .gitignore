@@ -3,6 +3,11 @@
 .idea
 
 
+# Awwwards animation pack — 2.1GB paid asset, reference-only. NEVER commit.
+# We port needed techniques into apps/web; the raw pack stays local.
+packages/Awwwards Pack/
+packages/Awwwards Pack-*.zip
+
 # Project specific
 apps/api/node_modules/
 apps/web/node_modules/

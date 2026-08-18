@@ -1,10 +1,9 @@
+import { ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
- * Brand mark + wordmark. Placeholder until the real asset is supplied — drop it
- * in by replacing the <span> mark with an <img>/<svg>. Drop-in points per the
- * brief: sidebar header, login/register, email header, favicon. Theme-aware via
- * tokens (no hardcoded color).
+ * TrustLink brand mark + wordmark. Shield-check mark in the signature purple→pink
+ * gradient; theme-aware wordmark. Drop-in points: app shell, login/register.
  */
 export function Logo({
   className,
@@ -19,14 +18,18 @@ export function Logo({
     <span className={cn("inline-flex items-center gap-2.5", className)}>
       <span
         aria-hidden
-        className="grid h-7 w-7 flex-shrink-0 place-items-center rounded-md bg-primary text-sm font-bold text-primary-foreground"
+        className="grid h-7 w-7 flex-shrink-0 place-items-center rounded-md bg-gradient-accent text-white shadow-sm"
       >
-        V
+        <ShieldCheck className="size-4" strokeWidth={2.5} />
       </span>
       {showWordmark && (
         <span className="leading-tight">
-          <span className="block text-sm font-semibold tracking-tight text-foreground">Vendor Management</span>
-          {subtitle && <span className="block text-xs text-muted-foreground">{subtitle}</span>}
+          <span className="block text-sm font-semibold tracking-tight text-foreground">TrustLink</span>
+          {subtitle && (
+            <span className="block font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+              {subtitle}
+            </span>
+          )}
         </span>
       )}
     </span>

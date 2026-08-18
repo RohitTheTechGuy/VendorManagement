@@ -23,12 +23,12 @@ const SIGNING_STATES: ContractState[] = ["AWAITING_SIGNATURES", "PARTIALLY_EXECU
 
 const STATE_STYLE: Record<string, string> = {
   DRAFT_PENDING: "bg-muted text-muted-foreground",
-  DRAFT_UPLOADED: "bg-sky-500/10 text-sky-700 dark:text-sky-300",
-  VENDOR_REVIEW: "bg-sky-500/10 text-sky-700 dark:text-sky-300",
+  DRAFT_UPLOADED: "bg-teal-500/10 text-teal-700 dark:text-teal-300",
+  VENDOR_REVIEW: "bg-teal-500/10 text-teal-700 dark:text-teal-300",
   CHANGES_REQUESTED: "bg-amber-500/10 text-amber-700 dark:text-amber-300",
-  REVISED: "bg-sky-500/10 text-sky-700 dark:text-sky-300",
-  AGREED: "bg-indigo-500/10 text-indigo-700 dark:text-indigo-300",
-  AWAITING_SIGNATURES: "bg-indigo-500/10 text-indigo-700 dark:text-indigo-300",
+  REVISED: "bg-teal-500/10 text-teal-700 dark:text-teal-300",
+  AGREED: "bg-violet-500/10 text-violet-700 dark:text-violet-300",
+  AWAITING_SIGNATURES: "bg-violet-500/10 text-violet-700 dark:text-violet-300",
   PARTIALLY_EXECUTED: "bg-violet-500/10 text-violet-700 dark:text-violet-300",
   EXECUTED: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
 };

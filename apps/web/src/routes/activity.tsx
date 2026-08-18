@@ -7,7 +7,7 @@ import { usePolling } from "../lib/use-polling.js";
 const SIDE_DOT: Record<ActivityItem["side"], string> = {
   vendor: "bg-amber-500",
   buyer: "bg-primary",
-  system: "bg-sky-500",
+  system: "bg-teal-500",
 };
 
 const CATEGORY_LABEL: Record<ActivityItem["category"], string> = {
@@ -33,7 +33,7 @@ export function ActivityPage() {
 
   return (
     <AppShell subtitle="Activity">
-      <h1 className="text-2xl font-bold">Activity</h1>
+      <h1 className="font-display text-2xl font-semibold">Activity</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         Everything happening across your vendors — submissions, verifications, approvals, contracts and onboarding.
       </p>

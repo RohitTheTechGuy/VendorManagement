@@ -38,7 +38,13 @@ export async function removeCandidate(requirementId: string, candidateId: string
   await http.delete(`/api/requirements/${requirementId}/candidates/${candidateId}`);
 }
 
-export async function dispatchInvites(requirementId: string): Promise<DispatchInvitesResponse> {
-  const response = await http.post(`/api/requirements/${requirementId}/invites`);
+// Omit candidateIds to invite every not-yet-invited candidate (bulk); pass a
+// subset to invite just those (individual invites).
+export async function dispatchInvites(
+  requirementId: string,
+  candidateIds?: string[],
+): Promise<DispatchInvitesResponse> {
+  const body = candidateIds && candidateIds.length > 0 ? { candidateIds } : {};
+  const response = await http.post(`/api/requirements/${requirementId}/invites`, body);
   return dispatchInvitesResponseSchema.parse(response.data);
 }

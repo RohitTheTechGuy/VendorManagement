@@ -3,8 +3,10 @@ import { Router } from "express";
 import {
   createRequirementSchema,
   addCandidatesSchema,
+  dispatchInvitesRequestSchema,
   type CreateRequirementInput,
   type AddCandidatesInput,
+  type DispatchInvitesRequest,
   type RequirementSummary,
   type Candidate,
   type RequirementDetail,
@@ -284,15 +286,27 @@ requirementsRouter.delete("/:id/candidates/:candidateId", async (req, res, next)
   }
 });
 
-// Dispatch magic-link invites to every not-yet-invited candidate.
-requirementsRouter.post("/:id/invites", async (req, res, next) => {
+// Dispatch magic-link invites. With no candidateIds, invites every not-yet-invited
+// candidate (bulk); with candidateIds, only those (individual invites).
+requirementsRouter.post("/:id/invites", validateBody(dispatchInvitesRequestSchema), async (req, res, next) => {
   try {
     const orgId = buyerOrgId(req);
     const requirementId = req.params.id as string;
+    const { candidateIds } = req.body as DispatchInvitesRequest;
 
     const requirement = await prisma.requirement.findFirst({
       where: { id: requirementId, orgId },
-      include: { candidates: { where: { inviteStatus: "NOT_INVITED" }, orderBy: { createdAt: "asc" } } },
+      include: {
+        candidates: {
+          // Always NOT_INVITED; when candidateIds is given, restrict to that set
+          // so an already-invited or unknown id is silently skipped, never re-sent.
+          where: {
+            inviteStatus: "NOT_INVITED",
+            ...(candidateIds && candidateIds.length > 0 ? { id: { in: candidateIds } } : {}),
+          },
+          orderBy: { createdAt: "asc" },
+        },
+      },
     });
     if (!requirement) {
       res.status(404).json({ error: "Requirement not found" });

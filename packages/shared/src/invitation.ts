@@ -11,6 +11,13 @@ export const inviteResultSchema = z.object({
 });
 export type InviteResult = z.infer<typeof inviteResultSchema>;
 
+// Optional candidateIds scopes the dispatch to specific candidates (individual
+// invites). Omitted/empty = invite every not-yet-invited candidate (bulk).
+export const dispatchInvitesRequestSchema = z.object({
+  candidateIds: z.array(z.string().uuid()).optional(),
+});
+export type DispatchInvitesRequest = z.infer<typeof dispatchInvitesRequestSchema>;
+
 export const dispatchInvitesResponseSchema = z.object({
   results: z.array(inviteResultSchema),
   requirement: requirementDetailSchema,

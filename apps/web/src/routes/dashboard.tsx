@@ -35,7 +35,7 @@ export function Dashboard() {
     <AppShell>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Requirements</h1>
+          <h1 className="font-display text-2xl font-semibold">Requirements</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Create a requirement, shortlist vendors, and dispatch invites.
           </p>
@@ -88,7 +88,7 @@ function ReadyView({
   if (requirements.length === 0) {
     return (
       <Card className="mt-8 grid place-items-center gap-3 p-14 text-center">
-        <div className="grid h-12 w-12 place-items-center rounded-full bg-indigo-500/10 text-primary">
+        <div className="grid h-12 w-12 place-items-center rounded-full bg-primary/10 text-primary">
           <PlusIcon />
         </div>
         <p className="text-base font-semibold">No requirements yet</p>

@@ -59,7 +59,7 @@ export function NewRequirement() {
           ← Back to requirements
         </Link>
 
-        <h1 className="mt-3 text-2xl font-bold tracking-tight">New requirement</h1>
+        <h1 className="mt-3 font-display text-2xl font-semibold">New requirement</h1>
         <p className="mt-1 text-sm text-muted-foreground">Define the part and process, then shortlist vendors.</p>
 
         <Card className="mt-6 p-6">

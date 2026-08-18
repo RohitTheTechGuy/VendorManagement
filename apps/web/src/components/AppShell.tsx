@@ -1,5 +1,7 @@
-import type { ReactNode } from "react";
-import { NavLink } from "react-router-dom";
+import { useRef, type ReactNode } from "react";
+import { NavLink, useLocation } from "react-router-dom";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
 import { useAuth } from "../lib/auth-context.js";
 import { cn } from "./ui.js";
 import { Button } from "@/components/ui/button";
@@ -10,8 +12,11 @@ const APPROVER_ROLES = ["QUALITY", "FINANCE", "TAX", "LEGAL"];
 
 function navClass({ isActive }: { isActive: boolean }) {
   return cn(
-    "rounded-md px-2.5 py-1 text-sm font-medium transition-colors",
-    isActive ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground",
+    "relative px-1 py-1 font-mono text-[11px] uppercase tracking-[0.16em] transition-colors",
+    "after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:bg-gradient-accent after:transition-opacity",
+    isActive
+      ? "text-foreground after:opacity-100"
+      : "text-muted-foreground hover:text-foreground after:opacity-0",
   );
 }
 
@@ -23,9 +28,28 @@ export function AppShell({
   subtitle?: string;
 }) {
   const { user, logout } = useAuth();
+  const location = useLocation();
+  const mainRef = useRef<HTMLElement>(null);
+
+  // Page-enter transition: content fades/rises in on every navigation.
+  useGSAP(
+    () => {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      // clearProps removes the inline transform when the tween ends — a lingering
+      // transform on <main> would become the containing block for fixed children.
+      gsap.from(mainRef.current, {
+        opacity: 0,
+        y: 12,
+        duration: 0.4,
+        ease: "power2.out",
+        clearProps: "transform",
+      });
+    },
+    { scope: mainRef, dependencies: [location.pathname] },
+  );
 
   return (
-    <div className="min-h-screen bg-muted/40 text-foreground">
+    <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-10 border-b border-border bg-card/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
           <div className="flex items-center gap-2.5">
@@ -69,7 +93,9 @@ export function AppShell({
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-6 py-8">{children}</main>
+      <main ref={mainRef} className="mx-auto max-w-6xl px-6 py-8">
+        {children}
+      </main>
     </div>
   );
 }

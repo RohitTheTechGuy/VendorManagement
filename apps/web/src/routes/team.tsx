@@ -15,7 +15,7 @@ import { errorMessage } from "../lib/auth-api.js";
 
 const ROLE_STYLE: Record<BuyerRole, string> = {
   OWNER: "bg-foreground text-background",
-  QUALITY: "bg-indigo-500/10 text-indigo-700 dark:text-indigo-300",
+  QUALITY: "bg-violet-500/10 text-violet-700 dark:text-violet-300",
   FINANCE: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
   TAX: "bg-amber-500/10 text-amber-700 dark:text-amber-300",
   LEGAL: "bg-violet-500/10 text-violet-700 dark:text-violet-300",
@@ -73,7 +73,7 @@ export function TeamPage() {
 
   return (
     <AppShell>
-      <h1 className="text-2xl font-bold">Team</h1>
+      <h1 className="font-display text-2xl font-semibold">Team</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         Add buyer teammates and assign their role. Approvers (Quality, Finance, Tax, Legal) get their own
         review queue; the four approver seats are what a vendor's approvals require.

@@ -47,7 +47,7 @@ const PREQUAL_STATES = new Set([
 ]);
 
 const CHECK_STATUS_STYLE: Record<string, string> = {
-  RUNNING: "bg-sky-500/10 text-sky-700 dark:text-sky-300",
+  RUNNING: "bg-teal-500/10 text-teal-700 dark:text-teal-300",
   PASSED: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
   ACCEPTED: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
   FAILED: "bg-rose-500/10 text-rose-700 dark:text-rose-300",
@@ -169,13 +169,13 @@ export function VendorDrawer({
   const checkByType = new Map((link?.checks ?? []).map((c) => [c.checkType, c]));
 
   return (
-    <Modal open={open} onClose={onClose} title="Vendor" maxWidth="max-w-3xl">
+    <Modal open={open} onClose={onClose} title="Vendor" fullScreen>
       {!link ? (
-        <div className="flex items-center gap-3 py-8 text-muted-foreground">
+        <div className="mx-auto flex w-full max-w-3xl items-center gap-3 py-8 text-muted-foreground">
           <Spinner /> Loading…
         </div>
       ) : (
-        <div className="space-y-5">
+        <div className="mx-auto w-full max-w-3xl space-y-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h3 className="text-lg font-semibold">{link.candidate.legalName}</h3>

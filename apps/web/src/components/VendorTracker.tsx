@@ -108,9 +108,9 @@ export function VendorTracker({ link }: { link: VendorLinkDTO }) {
           <p className="text-xs text-amber-700 dark:text-amber-300">Pending on you</p>
           <p className="text-xl font-semibold text-amber-800 dark:text-amber-300">{link.tat.vendorPendingDays} days</p>
         </div>
-        <div className="rounded-lg bg-indigo-500/10 px-4 py-3">
-          <p className="text-xs text-indigo-700 dark:text-indigo-300">Pending on buyer</p>
-          <p className="text-xl font-semibold text-indigo-800 dark:text-indigo-300">{link.tat.buyerPendingDays} days</p>
+        <div className="rounded-lg bg-violet-500/10 px-4 py-3">
+          <p className="text-xs text-violet-700 dark:text-violet-300">Pending on buyer</p>
+          <p className="text-xl font-semibold text-violet-800 dark:text-violet-300">{link.tat.buyerPendingDays} days</p>
         </div>
         <div className="rounded-lg bg-muted px-4 py-3">
           <p className="text-xs text-muted-foreground">Buyer contact</p>

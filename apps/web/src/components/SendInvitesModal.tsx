@@ -32,7 +32,9 @@ export function SendInvitesModal({
     setSubmitting(true);
     setError(null);
     try {
-      const response = await dispatchInvites(requirementId);
+      // Scope the dispatch to exactly the candidates shown (one for an
+      // individual invite, all NOT_INVITED for the bulk button).
+      const response = await dispatchInvites(requirementId, pending.map((c) => c.id));
       setResults(response.results);
       onDispatched(response.requirement);
     } catch (e) {

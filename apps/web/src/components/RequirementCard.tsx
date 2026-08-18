@@ -11,7 +11,7 @@ export function RequirementCard({ requirement, index }: { requirement: Requireme
     <Link
       to={`/requirements/${id}`}
       style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
-      className="group animate-reveal flex flex-col rounded-2xl border border-border bg-card p-5 shadow-sm transition-all duration-200 hover:border-primary/50 hover:shadow-md motion-safe:hover:-translate-y-0.5"
+      className="group relative flex animate-reveal flex-col overflow-hidden rounded-[14px] border border-border bg-card p-5 shadow-sm transition-all duration-200 before:absolute before:inset-x-0 before:top-0 before:h-[1.5px] before:bg-gradient-accent before:opacity-0 before:transition-opacity hover:border-primary/50 hover:shadow-md hover:before:opacity-100 motion-safe:hover:-translate-y-0.5"
     >
       <div className="flex items-start justify-between gap-3">
         <StageBadge stage={stage} />

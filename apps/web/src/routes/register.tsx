@@ -63,7 +63,7 @@ export function RegisterPage() {
         onSubmit={onSubmit}
         className="w-full max-w-sm rounded-2xl border border-border bg-card p-8 shadow-sm"
       >
-        <h1 className="text-2xl font-bold">Create your account</h1>
+        <h1 className="font-display text-2xl font-semibold">Create your account</h1>
         <p className="mt-1 text-sm text-muted-foreground">Set up your buyer organisation</p>
 
         {formError && (

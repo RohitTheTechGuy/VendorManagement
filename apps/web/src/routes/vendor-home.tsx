@@ -33,7 +33,7 @@ export function VendorHome() {
 
   return (
     <AppShell subtitle="Vendor portal">
-      <h1 className="text-2xl font-bold">Your onboarding</h1>
+      <h1 className="font-display text-2xl font-semibold">Your onboarding</h1>
       {links.length === 0 ? (
         <p className="mt-2 text-sm text-muted-foreground">
           You have no active onboarding. Open the magic link in your invitation email to get started.

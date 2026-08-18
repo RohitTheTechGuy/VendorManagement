@@ -76,14 +76,14 @@ export function InviteRedeemPage() {
 
         {phase === "error" && (
           <div>
-            <h1 className="text-xl font-bold">Invite link problem</h1>
+            <h1 className="font-display text-xl font-semibold">Invite link problem</h1>
             <p className="mt-2 text-sm text-rose-700 dark:text-rose-300">{error}</p>
           </div>
         )}
 
         {phase === "set-password" && (
           <form onSubmit={onSetPassword}>
-            <h1 className="text-2xl font-bold">Welcome</h1>
+            <h1 className="font-display text-2xl font-semibold">Welcome</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               You've been invited to onboard for <span className="font-medium">{title}</span>. Set a
               password to continue.

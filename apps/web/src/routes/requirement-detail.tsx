@@ -19,7 +19,7 @@ type Load =
 const INVITE_STATUS: Record<InviteStatus, { label: string; className: string }> = {
   NOT_INVITED: { label: "Not invited", className: "bg-muted text-muted-foreground" },
   INVITED: { label: "Invited", className: "bg-violet-500/10 text-violet-700 dark:text-violet-300" },
-  OPENED: { label: "Opened", className: "bg-sky-500/10 text-sky-700 dark:text-sky-300" },
+  OPENED: { label: "Opened", className: "bg-teal-500/10 text-teal-700 dark:text-teal-300" },
   EXPIRED: { label: "Expired", className: "bg-rose-500/10 text-rose-700 dark:text-rose-300" },
 };
 
@@ -27,7 +27,9 @@ export function RequirementDetailPage() {
   const { id = "" } = useParams();
   const [state, setState] = useState<Load>({ kind: "loading" });
   const [modalOpen, setModalOpen] = useState(false);
-  const [sendOpen, setSendOpen] = useState(false);
+  // null = closed; a list = the candidates the invite modal will dispatch to
+  // (one row for an individual invite, all NOT_INVITED for the bulk button).
+  const [sendCandidates, setSendCandidates] = useState<Candidate[] | null>(null);
   const [rowError, setRowError] = useState<string | null>(null);
   const [drawerLink, setDrawerLink] = useState<string | null>(null);
 
@@ -78,7 +80,7 @@ export function RequirementDetailPage() {
         <Ready
           detail={state.detail}
           onAdd={() => setModalOpen(true)}
-          onSend={() => setSendOpen(true)}
+          onSend={setSendCandidates}
           onRemove={onRemove}
           onOpenLink={setDrawerLink}
           rowError={rowError}
@@ -101,10 +103,10 @@ export function RequirementDetailPage() {
             onUpdated={(detail) => setState({ kind: "ready", detail })}
           />
           <SendInvitesModal
-            open={sendOpen}
-            onClose={() => setSendOpen(false)}
+            open={sendCandidates !== null}
+            onClose={() => setSendCandidates(null)}
             requirementId={id}
-            pending={state.detail.candidates.filter((c) => c.inviteStatus === "NOT_INVITED")}
+            pending={sendCandidates ?? []}
             onDispatched={(detail) => setState({ kind: "ready", detail })}
           />
         </>
@@ -123,20 +125,21 @@ function Ready({
 }: {
   detail: RequirementDetail;
   onAdd: () => void;
-  onSend: () => void;
+  onSend: (candidates: Candidate[]) => void;
   onRemove: (c: Candidate) => void;
   onOpenLink: (linkId: string) => void;
   rowError: string | null;
 }) {
   const { title, stage, partCategory, plantLocation, targetAwardDate, processCategories, candidates } = detail;
-  const pendingCount = candidates.filter((c) => c.inviteStatus === "NOT_INVITED").length;
+  const pending = candidates.filter((c) => c.inviteStatus === "NOT_INVITED");
+  const pendingCount = pending.length;
 
   return (
     <>
       <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+            <h1 className="font-display text-2xl font-semibold">{title}</h1>
             <StageBadge stage={stage} />
           </div>
           <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted-foreground">
@@ -156,7 +159,7 @@ function Ready({
           <Button variant="secondary" onClick={onAdd}>
             Add candidate
           </Button>
-          <Button onClick={onSend} disabled={pendingCount === 0} title={pendingCount === 0 ? "No candidates left to invite" : undefined}>
+          <Button onClick={() => onSend(pending)} disabled={pendingCount === 0} title={pendingCount === 0 ? "No candidates left to invite" : undefined}>
             Send invites{pendingCount > 0 ? ` (${pendingCount})` : ""}
           </Button>
         </div>
@@ -205,16 +208,27 @@ function Ready({
                         <span
                           className={cn(
                             "rounded-md px-2 py-0.5 text-xs font-medium",
-                            c.source === "DIRECTORY" ? "bg-indigo-500/10 text-indigo-700 dark:text-indigo-300" : "bg-muted text-muted-foreground",
+                            c.source === "DIRECTORY" ? "bg-violet-500/10 text-violet-700 dark:text-violet-300" : "bg-muted text-muted-foreground",
                           )}
                         >
                           {c.source === "DIRECTORY" ? "Directory" : "Manual"}
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", status.className)}>
-                          {status.label}
-                        </span>
+                        {c.inviteStatus === "NOT_INVITED" ? (
+                          <button
+                            type="button"
+                            onClick={() => onSend([c])}
+                            className="rounded-md bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground transition hover:bg-primary/90"
+                            title={`Send an invite to ${c.legalName}`}
+                          >
+                            Send invite
+                          </button>
+                        ) : (
+                          <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", status.className)}>
+                            {status.label}
+                          </span>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         {c.link ? (

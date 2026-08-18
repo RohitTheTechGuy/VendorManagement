@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import type { DirectoryVendor } from "@vendor-management/shared";
 import { AppShell } from "../components/AppShell.js";
-import { Card, Spinner, cn } from "../components/ui.js";
+import { Search } from "lucide-react";
+import { Card, Kbd, Spinner, cn } from "../components/ui.js";
 import { getDirectory } from "../lib/candidates-api.js";
 
 const BADGE: Record<DirectoryVendor["badgeState"], { label: string; className: string }> = {
@@ -33,20 +34,24 @@ export function DirectoryPage() {
 
   return (
     <AppShell subtitle="Directory">
-      <h1 className="text-2xl font-bold">Directory</h1>
+      <h1 className="font-display text-2xl font-semibold">Directory</h1>
       <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
         Your verified vendor pool. Onboarded vendors are added automatically as{" "}
         <strong>Verified</strong>; vendors that cleared pre-qualification but weren't awarded are{" "}
         <strong>Listed</strong> as warm leads.
       </p>
 
-      <div className="mt-4">
+      <div className="relative mt-4 max-w-sm">
+        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by legal name…"
-          className="w-full max-w-sm rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-ring"
+          className="w-full rounded-lg border border-border bg-card py-2 pl-9 pr-14 text-sm outline-none transition-colors focus:border-ring"
         />
+        <span className="absolute right-2.5 top-1/2 -translate-y-1/2">
+          <Kbd>⌘K</Kbd>
+        </span>
       </div>
 
       <Card className="mt-4 divide-y divide-border p-0">

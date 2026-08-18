@@ -35,7 +35,7 @@ export function VendorLinkPage() {
         <div className="space-y-6">
           <div>
             <p className="text-xs uppercase tracking-wide text-muted-foreground">{link.requirement.buyerOrgName}</p>
-            <h1 className="text-2xl font-bold">{link.requirement.title}</h1>
+            <h1 className="font-display text-2xl font-semibold">{link.requirement.title}</h1>
           </div>
 
           <VendorTracker link={link} />
