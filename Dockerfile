@@ -1,5 +1,5 @@
 # Stage 1: Build the React frontend
-FROM node:22-alpine AS frontend-build
+FROM node:22-slim AS frontend-build
 
 WORKDIR /app
 
@@ -16,9 +16,12 @@ RUN npm run build --workspace packages/shared
 RUN npm run build --workspace apps/web
 
 # Stage 2: Build the Express backend
-FROM node:22-alpine AS backend-build
+FROM node:22-slim AS backend-build
 
 WORKDIR /app
+
+# node:*-slim (Debian) omits OpenSSL, which the Prisma engine needs.
+RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 
 COPY package.json package-lock.json tsconfig.base.json ./
 COPY apps/web/package.json apps/web/package.json
@@ -36,9 +39,12 @@ RUN npm run build --workspace packages/db
 RUN npm run build --workspace apps/api
 
 # Stage 3: Run both applications in one image
-FROM node:22-alpine AS production
+FROM node:22-slim AS production
 
 WORKDIR /app
+
+# node:*-slim (Debian) omits OpenSSL, which the Prisma engine needs at runtime.
+RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 
 COPY package.json package-lock.json ./
 COPY apps/web/package.json apps/web/package.json
