@@ -3,12 +3,11 @@ import { NavLink, useLocation } from "react-router-dom";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { useAuth } from "../lib/auth-context.js";
+import { BUYER_NAV, canAccess } from "../lib/route-access.js";
 import { cn } from "./ui.js";
 import { Button } from "@/components/ui/button";
 import { Logo } from "./Logo.js";
 import { ModeToggle } from "./ModeToggle.js";
-
-const APPROVER_ROLES = ["QUALITY", "FINANCE", "TAX", "LEGAL"];
 
 function navClass({ isActive }: { isActive: boolean }) {
   return cn(
@@ -56,28 +55,13 @@ export function AppShell({
             <Logo subtitle={subtitle} />
             {user?.userType === "BUYER" && (
               <nav className="ml-4 flex items-center gap-1">
-                {user.role === "OWNER" && (
-                  <>
-                    <NavLink to="/" end className={navClass}>
-                      Requirements
-                    </NavLink>
-                    <NavLink to="/directory" className={navClass}>
-                      Directory
-                    </NavLink>
-                    <NavLink to="/team" className={navClass}>
-                      Team
-                    </NavLink>
-                  </>
-                )}
-                {APPROVER_ROLES.includes(user.role ?? "") && (
-                  <NavLink to="/approvals" className={navClass}>
-                    Approvals
+                {/* Nav mirrors route access — a link shows only if the role can
+                    open the page (BUYER_NAV / RequireRole share one source). */}
+                {BUYER_NAV.filter((r) => canAccess(user.role, r.roles)).map((r) => (
+                  <NavLink key={r.path} to={r.path} end={r.nav.end} className={navClass}>
+                    {r.nav.label}
                   </NavLink>
-                )}
-                {/* Every buyer can see the org activity feed. */}
-                <NavLink to="/activity" className={navClass}>
-                  Activity
-                </NavLink>
+                ))}
               </nav>
             )}
           </div>

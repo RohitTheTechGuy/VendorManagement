@@ -1,5 +1,4 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Navigate } from "react-router-dom";
 import {
   BUYER_ROLES,
   BUYER_ROLE_LABEL,
@@ -9,7 +8,6 @@ import {
 } from "@vendor-management/shared";
 import { AppShell } from "../components/AppShell.js";
 import { Button, Card, Spinner, cn } from "../components/ui.js";
-import { useAuth } from "../lib/auth-context.js";
 import { listTeam, createTeamMember, removeTeamMember } from "../lib/team-api.js";
 import { errorMessage } from "../lib/auth-api.js";
 
@@ -22,7 +20,6 @@ const ROLE_STYLE: Record<BuyerRole, string> = {
 };
 
 export function TeamPage() {
-  const { role } = useAuth();
   const [members, setMembers] = useState<TeamMember[] | null>(null);
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
@@ -37,9 +34,7 @@ export function TeamPage() {
   }
   useEffect(load, []);
 
-  // Only owners manage the team.
-  if (role && role !== "OWNER") return <Navigate to="/" replace />;
-
+  // Role gating (OWNER-only) is enforced by RequireRole in the router.
   async function onAdd(event: FormEvent) {
     event.preventDefault();
     setFormError(null);
