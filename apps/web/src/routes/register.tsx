@@ -1,13 +1,23 @@
 import { useState, type FormEvent } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
+import { z } from "zod";
 import { registerSchema } from "@vendor-management/shared";
 import { useAuth } from "../lib/auth-context.js";
 import { errorMessage } from "../lib/auth-api.js";
 
+// Confirm-password is a client-only guard against typos, so it lives here rather
+// than in the shared API contract — the server only ever needs the one password.
+const registerFormSchema = registerSchema
+  .extend({ confirmPassword: z.string().min(1, "Please re-enter your password") })
+  .refine((d) => d.password === d.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
 export function RegisterPage() {
   const { user, loading, register } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ orgName: "", fullName: "", email: "", password: "" });
+  const [form, setForm] = useState({ orgName: "", fullName: "", email: "", password: "", confirmPassword: "" });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -21,7 +31,7 @@ export function RegisterPage() {
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     setFormError(null);
-    const parsed = registerSchema.safeParse(form);
+    const parsed = registerFormSchema.safeParse(form);
     if (!parsed.success) {
       setFieldErrors(parsed.error.flatten().fieldErrors);
       return;
@@ -29,7 +39,9 @@ export function RegisterPage() {
     setFieldErrors({});
     setSubmitting(true);
     try {
-      const { email } = await register(parsed.data);
+      // Drop confirmPassword — the API only takes the four core fields.
+      const { orgName, fullName, email, password } = parsed.data;
+      await register({ orgName, fullName, email, password });
       // Account isn't created yet — go verify the emailed code.
       navigate("/verify", { replace: true, state: { email } });
     } catch (error) {
@@ -75,6 +87,7 @@ export function RegisterPage() {
         {field("fullName", "Your name", "text", "name")}
         {field("email", "Email", "email", "email")}
         {field("password", "Password", "password", "new-password")}
+        {field("confirmPassword", "Confirm password", "password", "new-password")}
 
         <button
           type="submit"
