@@ -1,6 +1,13 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import type { AuthUser, LoginInput, RegisterInput, UserType } from "@vendor-management/shared";
-import { apiLogin, apiLogout, apiMe, apiRegister } from "./auth-api.js";
+import type {
+  AuthUser,
+  LoginInput,
+  RegisterInput,
+  RegisterResponse,
+  UserType,
+  VerifyEmailInput,
+} from "@vendor-management/shared";
+import { apiLogin, apiLogout, apiMe, apiRegister, apiVerifyEmail } from "./auth-api.js";
 
 interface AuthContextValue {
   user: AuthUser | null;
@@ -9,7 +16,10 @@ interface AuthContextValue {
   userType: UserType | null;
   role: string | null;
   login: (input: LoginInput) => Promise<AuthUser>;
-  register: (input: RegisterInput) => Promise<AuthUser>;
+  // Register starts email verification — it does NOT sign the user in.
+  register: (input: RegisterInput) => Promise<RegisterResponse>;
+  // Verifying the OTP creates the account and signs the user in.
+  verifyEmail: (input: VerifyEmailInput) => Promise<AuthUser>;
   logout: () => Promise<void>;
   // Re-read the session (used after a magic-link redeem sets the cookie server-side).
   refresh: () => Promise<AuthUser | null>;
@@ -51,7 +61,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return u;
     },
     register: async (input) => {
-      const u = await apiRegister(input);
+      // No session yet — the user must verify their email first.
+      return apiRegister(input);
+    },
+    verifyEmail: async (input) => {
+      const u = await apiVerifyEmail(input);
       setUser(u);
       return u;
     },

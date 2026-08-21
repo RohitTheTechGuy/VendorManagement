@@ -46,6 +46,44 @@ export async function sendNotifyEmail(params: { to: string; subject: string; htm
   }
 }
 
+function otpHtml(code: string): string {
+  return `
+    <div style="font-family:system-ui,sans-serif;line-height:1.6;color:#172033">
+      <p>Your verification code is:</p>
+      <p style="font-size:28px;font-weight:700;letter-spacing:6px;margin:8px 0">${code}</p>
+      <p style="color:#64748b;font-size:14px">This code expires in 10 minutes. If you didn't request it, you can ignore this email.</p>
+    </div>`;
+}
+
+// Sends the registration verification code via Resend. On any non-success path
+// (no API key, Resend error such as an unverified-domain 403, or a throw) the
+// code is logged so local dev can still read it, and false is returned. Never
+// throws. The code is logged under `code` (not a key named `token`, which the
+// logger redacts) so it stays visible in dev.
+export async function sendOtpEmail(params: { to: string; code: string }): Promise<boolean> {
+  if (!env.RESEND_API_KEY) {
+    logger.info({ to: params.to, code: params.code }, "[otp] RESEND_API_KEY not set — verification code logged instead of emailed");
+    return false;
+  }
+  try {
+    const resend = new Resend(env.RESEND_API_KEY);
+    const { error } = await resend.emails.send({
+      from: env.RESEND_FROM,
+      to: params.to,
+      subject: "Your verification code",
+      html: otpHtml(params.code),
+    });
+    if (error) {
+      logger.error({ err: error, to: params.to, code: params.code }, "[otp] Resend returned an error — verification code logged instead");
+      return false;
+    }
+    return true;
+  } catch (error) {
+    logger.error({ err: error, to: params.to, code: params.code }, "[otp] Resend threw — verification code logged instead");
+    return false;
+  }
+}
+
 // Sends the invite via Resend. Returns true if actually sent, false if it was
 // only logged (no API key, or a send failure). NEVER throws — a broken email
 // provider must not break invite dispatch.

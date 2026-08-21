@@ -550,3 +550,24 @@ model FileBlob {
   contractVersions ContractVersion[]
   contractComments ContractComment[]
 }
+
+// ---------------------------------------------------------------------------
+// Pending self-service registration awaiting email OTP verification. The buyer
+// org + OWNER AppUser are NOT created until the code is verified — so this row
+// holds the whole signup transiently. One row per email (re-registering
+// upserts); the row is deleted on success and otherwise expires. No plaintext
+// code is ever stored — only its sha256 hash. See routes/auth.ts + lib/otp.ts.
+// ---------------------------------------------------------------------------
+model EmailVerification {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  codeHash     String // sha256 of the 6-digit code
+  passwordHash String // bcrypt hash of the chosen password
+  fullName     String
+  orgName      String
+  expiresAt    DateTime
+  attempts     Int      @default(0) // wrong-code attempts against the current code
+  resendCount  Int      @default(0)
+  lastSentAt   DateTime @default(now())
+  createdAt    DateTime @default(now())
+}

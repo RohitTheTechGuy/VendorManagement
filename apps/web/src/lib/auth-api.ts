@@ -1,15 +1,29 @@
 import axios from "axios";
 import {
   authResponseSchema,
+  registerResponseSchema,
   type AuthUser,
   type LoginInput,
   type RegisterInput,
+  type RegisterResponse,
+  type VerifyEmailInput,
 } from "@vendor-management/shared";
 import { http } from "./http.js";
 
-export async function apiRegister(input: RegisterInput): Promise<AuthUser> {
+// Registration no longer logs the user in — it starts email verification.
+export async function apiRegister(input: RegisterInput): Promise<RegisterResponse> {
   const response = await http.post("/api/auth/register", input);
+  return registerResponseSchema.parse(response.data);
+}
+
+// Verifying the emailed code creates the account and sets the session cookie.
+export async function apiVerifyEmail(input: VerifyEmailInput): Promise<AuthUser> {
+  const response = await http.post("/api/auth/verify-email", input);
   return authResponseSchema.parse(response.data).user;
+}
+
+export async function apiResendOtp(email: string): Promise<void> {
+  await http.post("/api/auth/resend-otp", { email });
 }
 
 export async function apiLogin(input: LoginInput): Promise<AuthUser> {

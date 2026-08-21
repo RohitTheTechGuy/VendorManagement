@@ -5,6 +5,7 @@ import { RequireRole } from "./components/RequireRole.js";
 import { BUYER_ROUTES } from "./lib/route-access.js";
 import { LoginPage } from "./routes/login.js";
 import { RegisterPage } from "./routes/register.js";
+import { VerifyEmailPage } from "./routes/verify-email.js";
 import { Dashboard } from "./routes/dashboard.js";
 import { NewRequirement } from "./routes/new-requirement.js";
 import { RequirementDetailPage } from "./routes/requirement-detail.js";
@@ -39,6 +40,7 @@ const buyerChildren = BUYER_ROUTES.map((r) => {
 export const router = createBrowserRouter([
   { path: "/login", element: <LoginPage /> },
   { path: "/register", element: <RegisterPage /> },
+  { path: "/verify", element: <VerifyEmailPage /> },
   { path: "/invite/:token", element: <InviteRedeemPage /> },
   {
     // Buyer shell — a vendor who lands here is bounced to the vendor portal.

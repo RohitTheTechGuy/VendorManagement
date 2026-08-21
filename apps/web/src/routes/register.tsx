@@ -29,8 +29,9 @@ export function RegisterPage() {
     setFieldErrors({});
     setSubmitting(true);
     try {
-      await register(parsed.data);
-      navigate("/", { replace: true });
+      const { email } = await register(parsed.data);
+      // Account isn't created yet — go verify the emailed code.
+      navigate("/verify", { replace: true, state: { email } });
     } catch (error) {
       setFormError(errorMessage(error, "Could not create account. Please try again."));
     } finally {
