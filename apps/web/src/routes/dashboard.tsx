@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import type { RequirementStage, RequirementSummary } from "@vendor-management/shared";
 import { getRequirements } from "../lib/requirements-api.js";
 import { errorMessage } from "../lib/auth-api.js";
@@ -7,6 +7,7 @@ import { STAGE_ORDER, STAGE_STYLE } from "../lib/stage.js";
 import { AppShell } from "../components/AppShell.js";
 import { Button, Card, Spinner, cn } from "../components/ui.js";
 import { RequirementCard } from "../components/RequirementCard.js";
+import { NewRequirementDrawer } from "../components/NewRequirementDrawer.js";
 
 type Load =
   | { kind: "loading" }
@@ -14,8 +15,11 @@ type Load =
   | { kind: "ready"; requirements: RequirementSummary[] };
 
 export function Dashboard() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [state, setState] = useState<Load>({ kind: "loading" });
   const [filter, setFilter] = useState<RequirementStage | "ALL">("ALL");
+  const [newOpen, setNewOpen] = useState(false);
 
   function load() {
     setState({ kind: "loading" });
@@ -25,6 +29,17 @@ export function Dashboard() {
   }
 
   useEffect(load, []);
+
+  // /requirements/new is a deep-link that opens the create drawer over the list.
+  useEffect(() => {
+    if (location.pathname === "/requirements/new") setNewOpen(true);
+  }, [location.pathname]);
+
+  function closeNew() {
+    setNewOpen(false);
+    // Drop the deep-link path back to the list so the URL matches what's shown.
+    if (location.pathname === "/requirements/new") navigate("/", { replace: true });
+  }
 
   // Role gating (OWNER-only) is enforced by RequireRole in the router.
   return (
@@ -36,13 +51,17 @@ export function Dashboard() {
             Create a requirement, shortlist vendors, and dispatch invites.
           </p>
         </div>
-        <Link to="/requirements/new">
-          <Button>
-            <PlusIcon />
-            New requirement
-          </Button>
-        </Link>
+        <Button onClick={() => setNewOpen(true)}>
+          <PlusIcon />
+          New requirement
+        </Button>
       </div>
+
+      <NewRequirementDrawer
+        open={newOpen}
+        onClose={closeNew}
+        onCreated={(requirement) => navigate(`/requirements/${requirement.id}`)}
+      />
 
       {state.kind === "loading" && (
         <div className="mt-16 grid place-items-center text-muted-foreground">
@@ -59,7 +78,9 @@ export function Dashboard() {
         </Card>
       )}
 
-      {state.kind === "ready" && <ReadyView requirements={state.requirements} filter={filter} setFilter={setFilter} />}
+      {state.kind === "ready" && (
+        <ReadyView requirements={state.requirements} filter={filter} setFilter={setFilter} onNew={() => setNewOpen(true)} />
+      )}
     </AppShell>
   );
 }
@@ -68,7 +89,9 @@ function ReadyView({
   requirements,
   filter,
   setFilter,
+  onNew,
 }: {
+  onNew: () => void;
   requirements: RequirementSummary[];
   filter: RequirementStage | "ALL";
   setFilter: (f: RequirementStage | "ALL") => void;
@@ -91,9 +114,9 @@ function ReadyView({
         <p className="max-w-sm text-sm text-muted-foreground">
           Create your first requirement to start shortlisting and inviting vendors.
         </p>
-        <Link to="/requirements/new" className="mt-1">
-          <Button>New requirement</Button>
-        </Link>
+        <Button className="mt-1" onClick={onNew}>
+          New requirement
+        </Button>
       </Card>
     );
   }

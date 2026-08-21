@@ -7,7 +7,6 @@ import { LoginPage } from "./routes/login.js";
 import { RegisterPage } from "./routes/register.js";
 import { VerifyEmailPage } from "./routes/verify-email.js";
 import { Dashboard } from "./routes/dashboard.js";
-import { NewRequirement } from "./routes/new-requirement.js";
 import { RequirementDetailPage } from "./routes/requirement-detail.js";
 import { DirectoryPage } from "./routes/directory.js";
 import { VendorHome } from "./routes/vendor-home.js";
@@ -23,7 +22,8 @@ const BUYER_PAGES: Record<string, ReactNode> = {
   "/": <Dashboard />,
   "/directory": <DirectoryPage />,
   "/team": <TeamPage />,
-  "/requirements/new": <NewRequirement />,
+  // Deep-link to the create drawer, which opens over the dashboard list.
+  "/requirements/new": <Dashboard />,
   "/requirements/:id": <RequirementDetailPage />,
   "/approvals": <ApprovalsPage />,
   "/activity": <ActivityPage />,
