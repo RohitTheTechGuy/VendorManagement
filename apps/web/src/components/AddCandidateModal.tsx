@@ -3,6 +3,7 @@ import {
   addCandidateSchema,
   PAN_REGEX,
   GSTIN_REGEX,
+  PROCESS_OPTIONS,
   type AddCandidateInput,
   type DirectoryVendor,
   type RequirementDetail,
@@ -12,16 +13,6 @@ import { errorMessage } from "../lib/auth-api.js";
 import { Modal } from "./Modal.js";
 import { Button, cn } from "./ui.js";
 
-const PROCESS_OPTIONS = [
-  "HPDC",
-  "Gravity Casting",
-  "CNC Turning",
-  "VMC",
-  "Forging",
-  "Sheet Metal",
-  "Heat Treatment",
-  "Plating",
-];
 const STATE_OPTIONS = ["Maharashtra", "Tamil Nadu", "Haryana", "Gujarat", "Punjab"];
 
 const inputClass =

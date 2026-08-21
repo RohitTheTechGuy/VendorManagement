@@ -1,5 +1,6 @@
 export * from "./health.js";
 export * from "./auth.js";
+export * from "./process.js";
 export * from "./requirement.js";
 export * from "./directory.js";
 export * from "./candidate.js";

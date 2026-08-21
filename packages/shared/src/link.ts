@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { contractDTOSchema } from "./contract.js";
+import { PROCESS_OPTIONS } from "./process.js";
 
 // ---------------------------------------------------------------------------
 // Link states + stages. These MIRROR the Prisma LinkState/LinkStage enums in
@@ -103,17 +104,6 @@ const PAN_PATTERN = "^[A-Z]{5}[0-9]{4}[A-Z]$";
 const GSTIN_PATTERN = "^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][0-9A-Z]Z[0-9A-Z]$";
 const UDYAM_PATTERN = "^UDYAM-[A-Z]{2}-[0-9]{2}-[0-9]{7}$";
 const IFSC_PATTERN = "^[A-Z]{4}0[A-Z0-9]{6}$";
-
-const PROCESS_OPTIONS = [
-  "HPDC",
-  "Gravity Casting",
-  "Forging",
-  "CNC Turning",
-  "VMC",
-  "Sheet Metal",
-  "Plating",
-  "Heat Treatment",
-];
 
 // Processes whose environmental footprint requires a pollution-control consent.
 const CONSENT_PROCESSES = new Set(["HPDC", "Gravity Casting", "Plating", "Heat Treatment"]);

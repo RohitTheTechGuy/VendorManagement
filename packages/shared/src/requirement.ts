@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { PROCESS_OPTIONS } from "./process.js";
 
 export const requirementStageSchema = z.enum([
   "DRAFT",
@@ -28,8 +29,10 @@ export const requirementListResponseSchema = z.object({
 });
 export type RequirementListResponse = z.infer<typeof requirementListResponseSchema>;
 
-// Preset process categories offered in the create form (multi-select chips).
-export const PROCESS_CATEGORIES = ["Machining", "Casting", "Forging", "Plating", "Assembly"] as const;
+// Process categories offered in the create form (multi-select chips) — the same
+// shared taxonomy as vendor process tags, so requirements and vendors match on
+// identical terms. (Older requirements may still hold legacy category strings.)
+export const PROCESS_CATEGORIES = PROCESS_OPTIONS;
 
 export const createRequirementSchema = z.object({
   title: z.string().trim().min(1, "Title is required"),
